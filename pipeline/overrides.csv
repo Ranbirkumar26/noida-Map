@@ -1,0 +1,21 @@
+# Known tower heights the satellite raster cannot see (it tops out near 100 m).
+# Applied to the `count` tallest buildings within `radius_m` of the point, only where the raster already shows a tower (>= 50 m).
+# Heights: Wikipedia "List of tallest buildings in Delhi-NCR" (CC BY-SA 4.0). Coordinates: Overture places / OpenStreetMap, approximate.
+name,lat,lon,height_m,count,radius_m
+North Eye,28.57271,77.38800,255,1,150
+Cyberthum,28.53660,77.38666,213.7,2,300
+Wave Livork,28.54543,77.32947,179,1,300
+ATS Knightsbridge,28.55000,77.32900,169,5,350
+Burj Noida,28.57550,77.38186,165,1,250
+Wave One,28.56927,77.32288,155,1,200
+UGCC Amber,28.54500,77.34900,154,2,350
+UGCC Burgundy,28.54300,77.35400,135,1,300
+Jaypee Krescent Homes,28.50600,77.38300,132,4,400
+Supertech Eco Village,28.57900,77.43900,130,1,400
+ATS Kingston Heath,28.43754,77.48978,130,1,300
+ATS Destinaire,28.54700,77.43700,130,1,400
+ATS Pious Orchards,28.41600,77.49000,126,1,400
+Grandthum,28.58287,77.41837,190,1,400
+ATS Kabana High,28.59255,77.43147,171,1,300
+Apex The Kremlin,28.65246,77.40972,130,1,300
+ATS Picturesque Reprieves,28.44716,77.47227,130,5,400

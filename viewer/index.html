@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive 3D model of Noida and Greater Noida built from open map data.">
+<meta name="theme-color" content="#0d1512">
+<title>Noida 3D</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d1512; --glass: rgba(13, 21, 18, 0.78); --solid: #131e1a; --rule: rgba(226, 240, 232, 0.15);
+    --fg: #edf3ef; --dim: #9fb0a7; --hi: #7fe0b0; --warm: #ffc46b;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--fg); font: 14px/1.4 var(--sans); overflow: hidden; }
+  [hidden] { display: none !important; }
+  #stage { position: fixed; inset: 0; }
+  #gl { width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+  #tags { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .tag { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; font-size: 12px;
+    text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, 0.85); }
+  .tag.town { font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
+  .tag.hood { color: #d9e5de; font-size: 11.5px; }
+  .tag.region { text-transform: uppercase; letter-spacing: 0.2em; color: var(--warm); }
+  .tag.tower { font: 10.5px var(--mono); color: #bfe9d4; }
+  .tag.sector { font-weight: 600; font-size: 12px; color: #f1f6f3; }
+  .tag.soc { font-size: 11.5px; font-weight: 600; color: #ffe3b0; }
+  .tag.bld { font-size: 11px; color: #cfe9ff; }
+  .tag.lm { font-size: 11px; color: #f3c9c9; }
+  .tag.poi { font-size: 10.5px; color: #dfe6e2; }
+
+  .ui { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left)); }
+  .bar { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+  .bar.low { align-items: flex-end; }
+  .card { pointer-events: auto; background: var(--glass); border: 1px solid var(--rule); border-radius: 12px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+  .brand { padding: 10px 14px; max-width: min(100%, 400px); }
+  .brand h1 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.22em; }
+  .brand h1 span { font-weight: 400; letter-spacing: 0; color: var(--hi); margin-left: 6px; font-size: 17px; }
+  .brand p { margin: 4px 0 0; color: var(--dim); font-size: 12px; }
+  .brand b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .menu { display: flex; align-items: center; gap: 6px; padding: 6px; flex-wrap: wrap; }
+  button, select { font: inherit; color: var(--fg); }
+  .b { background: none; border: 1px solid transparent; border-radius: 8px; padding: 7px 10px; cursor: pointer; line-height: 1; }
+  .b:hover { background: rgba(255, 255, 255, 0.08); }
+  .b[aria-pressed="true"] { background: rgba(127, 224, 176, 0.15); border-color: rgba(127, 224, 176, 0.5); color: #c9f5df; }
+  select.b { border-color: var(--rule); background: rgba(255, 255, 255, 0.04); }
+  select.b option { background: var(--solid); }
+  #find { border-color: var(--rule); background: rgba(255, 255, 255, 0.04); width: 210px; max-width: 100%; cursor: text; }
+  #find.miss { border-color: #ff8f7a; }
+  :focus-visible { outline: 2px solid var(--hi); outline-offset: 2px; }
+  #north { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 1px solid var(--rule); display: grid; place-items: center; }
+  .spot { padding: 9px 13px; }
+  .spot .name { font-weight: 600; }
+  .spot .ll { font: 11.5px var(--mono); color: var(--dim); margin-top: 2px; white-space: nowrap; }
+  .deck { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; width: min(100%, 580px); }
+  .go { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .go::-webkit-scrollbar { display: none; }
+  .pill { flex: none; border: 1px solid var(--rule); background: rgba(255, 255, 255, 0.04); border-radius: 999px; padding: 6px 11px; cursor: pointer; font-size: 12.5px; line-height: 1; }
+  .pill:hover { border-color: var(--hi); color: #c9f5df; }
+  .clock { display: flex; align-items: center; gap: 8px; }
+  .clock label { font: 12.5px var(--mono); min-width: 9.5ch; white-space: nowrap; }
+  .clock input { flex: 1; min-width: 60px; accent-color: var(--hi); }
+  .clock .b { border-color: var(--rule); font-size: 12px; padding: 6px 8px; white-space: nowrap; }
+  #tip { align-self: center; padding: 8px 14px; font-size: 12.5px; color: var(--dim); transition: opacity 0.6s; pointer-events: none; text-align: center; }
+  #tip.off { opacity: 0; }
+
+  #info { position: absolute; inset: 0 0 0 auto; width: min(420px, 100%); background: var(--solid); border-left: 1px solid var(--rule); padding: 18px; overflow-y: auto; z-index: 5; line-height: 1.5; }
+  #info h2 { margin: 0 0 6px; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; }
+  #info h3 { margin: 18px 0 6px; font-size: 13px; color: var(--hi); }
+  #info p, #info li { margin: 0 0 8px; font-size: 13px; color: #d3ded8; }
+  #info ul { margin: 0; padding-left: 18px; }
+  #info .b { float: right; border-color: var(--rule); }
+  .src { display: grid; grid-template-columns: auto 1fr auto; gap: 6px 10px; align-items: center; font-size: 12.5px; }
+  .src i { display: block; height: 8px; border-radius: 4px; background: var(--hi); }
+  .src div { background: rgba(255, 255, 255, 0.08); border-radius: 4px; overflow: hidden; }
+  .src span:last-child { font: 12px var(--mono); color: var(--dim); }
+
+  #boot { position: absolute; inset: 0; z-index: 10; display: grid; place-items: center; background: radial-gradient(110% 80% at 50% 100%, #1c3229, var(--bg) 65%); transition: opacity 0.8s; padding: 16px; }
+  #boot.done { opacity: 0; pointer-events: none; }
+  #boot div { width: min(100%, 360px); text-align: center; }
+  #boot h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: 0.3em; padding-left: 0.3em; }
+  #boot p { margin: 0 0 14px; color: var(--dim); font-size: 13px; }
+  #boot .m { height: 3px; background: rgba(255, 255, 255, 0.12); border-radius: 2px; overflow: hidden; }
+  #boot .m i { display: block; height: 100%; width: 3%; background: var(--hi); transition: width 0.3s; }
+  #boot .e { color: #ffb0a0; margin-top: 12px; font-size: 13px; }
+
+  @media (max-width: 640px) {
+    .brand p, #tip .kb, .clock .wide { display: none; }
+    .bar.low { flex-direction: column; align-items: stretch; } .deck { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) { #boot, #tip, #boot .m i { transition: none; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" tabindex="0" aria-label="Interactive 3D model of Noida and Greater Noida"></canvas>
+  <div id="tags" aria-hidden="true"></div>
+
+  <div class="ui">
+    <div class="bar">
+      <header class="card brand">
+        <h1>NOIDA <span lang="hi">नोएडा</span></h1>
+        <p id="sub">Noida and Greater Noida, built from the map</p>
+      </header>
+      <nav class="card menu">
+        <button class="b" id="north" title="Face north" aria-label="Face north">
+          <svg id="needle" width="22" height="22" viewBox="-11 -11 22 22"><path d="M0-9 4 2 0 0-4 2Z" fill="#7fe0b0"/><path d="M0 9 4 2 0 0-4 2Z" fill="#5f6f68"/></svg>
+        </button>
+        <input class="b" id="find" type="search" list="findList" placeholder="Search sector or place" aria-label="Search sector or place" autocomplete="off">
+        <datalist id="findList"></datalist>
+        <button class="b" id="tLabels" aria-pressed="true">Labels</button>
+        <select class="b" id="quality" aria-label="Detail level">
+          <option value="auto" id="qAuto" selected>Auto (medium)</option><option value="lite">Lite</option><option value="low">Low detail</option><option value="medium">Medium detail</option>
+          <option value="high">High detail</option><option value="ultra">Ultra detail</option>
+        </select>
+        <button class="b" id="tInfo">About</button>
+      </nav>
+    </div>
+
+    <div id="tip" class="card">Drag to move · pinch or scroll to zoom<span class="kb"> · right-drag or Ctrl-drag to turn · WASD to fly</span></div>
+
+    <div class="bar low">
+      <div class="card spot">
+        <div class="name" id="spotName">Noida</div>
+        <div class="ll" id="spotLL">28.5000° N  77.4300° E</div>
+      </div>
+      <div class="card deck">
+        <div class="go" id="go" role="list" aria-label="Fly to a place"></div>
+        <div class="clock">
+          <label for="hour" id="hourText">15:30 IST</label>
+          <input id="hour" type="range" min="0" max="24" step="0.05" value="15.5" aria-label="Time of day">
+          <button class="b wide" data-h="6.9">Sunrise</button>
+          <button class="b wide" data-h="12.2">Midday</button>
+          <button class="b" data-h="16.9">Golden hour</button>
+          <button class="b" data-h="20.5">Night</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside id="info" hidden>
+    <button class="b" id="infoX">Close</button>
+    <h2>About this model</h2>
+    <p>Every building, road, metro line, river and field is placed from open map data on one metric grid centred between Noida and Greater Noida. The detailed area is 32 × 48 km; around it the wider region is shown as satellite imagery.</p>
+    <h3>Where building heights come from</h3>
+    <div class="src" id="srcBars"></div>
+    <p id="srcNote"></p>
+    <h3>Real</h3>
+    <ul><li>Building footprints and positions</li><li>Roads, expressways, rail and metro alignments</li><li>Terrain, rivers and canals</li><li>Ground and roof colour, from satellite imagery</li><li>Tree cover</li><li>Sun position for Noida on 15 November</li></ul>
+    <h3>Generated</h3>
+    <ul><li>Windows, facades, rooftop tanks and stair heads</li><li>Tree shapes, traffic, street and window lights</li><li>Heights of buildings with no mapped height</li></ul>
+    <h3>Limits</h3>
+    <ul><li>Most buildings here have no surveyed height. Satellite estimates stop near 100 m, so only towers with a published height stand taller.</li><li>Some new societies have no mapped footprint; their blocks are outlined from the satellite height data and look rougher.</li><li>Ground imagery is 10 m per pixel, so streets blur up close.</li></ul>
+    <h3>Data</h3>
+    <ul id="srcList"></ul>
+  </aside>
+
+  <div id="boot"><div>
+    <h1>NOIDA</h1>
+    <p id="bootText">Reading terrain</p>
+    <div class="m"><i id="bootBar"></i></div>
+    <div class="e" id="bootErr" hidden></div>
+  </div></div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/" } }
+</script>
+<script>window.NOIDA_DATA = "../data/";</script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
