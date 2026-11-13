@@ -6,9 +6,25 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 const DATA = window.NOIDA_DATA, $ = id => document.getElementById(id);
-const QUALITY = { lite: [700, 1800, 1, 0], low: [1100, 2800, 1, 0], medium: [1800, 4500, 1.5, 1], high: [2800, 7000, 2, 1], ultra: [4200, 11000, 2, 1] };  // full-detail radius, mid radius, max pixel ratio, bloom
+// full-detail radius, mid radius, max pixel ratio, bloom, multisamples, shadow map size (0 = no shadows)
+const QUALITY = { lite: [700, 1800, 1, 0, 0, 0], low: [1100, 2800, 1, 0, 2, 1024], medium: [1800, 4500, 1.5, 1, 4, 2048], high: [2800, 7000, 2, 1, 4, 2048], ultra: [4200, 11000, 2, 1, 4, 4096] };
+// Final colour pass: a little more colour and contrast, a warm cast, soft corners, and a fixed dither against sky banding.
+const GRADE = {
+  uniforms: { tDiffuse: { value: null } },
+  vertexShader: "varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+  fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv;
+    void main() {
+      vec3 c = texture2D(tDiffuse, vUv).rgb;
+      c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 1.12);
+      c = mix(c, smoothstep(0.0, 1.0, c), 0.18) * vec3(1.02, 1.0, 0.97);
+      c *= mix(0.85, 1.0, smoothstep(0.82, 0.3, length((vUv - 0.5) * vec2(1.0, 0.9))));
+      float n = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+      gl_FragColor = vec4(c + (n - 0.5) * 0.014, 1.0);
+    }`,
+};
 const DAY_OF_YEAR = 319;                                    // 15 November, matching the imagery
 const U = { uNight: { value: 0 }, uTime: { value: 0 } };
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -109,13 +125,17 @@ function roadMaterial() {
     }`);
 }
 
+// 10 m satellite imagery is hazy and pale: deepen it so the ground reads as land, not as a faded photograph.
+const DEEPEN = "diffuseColor.rgb = mix(vec3(dot(diffuseColor.rgb, vec3(0.3, 0.59, 0.11))), diffuseColor.rgb, 1.35) * 0.8;";
 function terrainMaterial(map, mask, ext) {
+  if (!mask) return patch(new THREE.MeshLambertMaterial({ map }), { decl: "", main: "" }, "", DEEPEN);
   const m = new THREE.MeshLambertMaterial({ map });
   m.userData.uniforms = { uMask: { value: mask }, uExt: { value: new THREE.Vector4(ext[0], ext[1], ext[2] - ext[0], ext[3] - ext[1]) } };
   return patch(m, { decl: "uniform vec4 uExt; varying vec2 vGrid;", main: "vec4 wp = modelMatrix * vec4(position, 1.0); vGrid = vec2((wp.x - uExt.x) / uExt.z, (-wp.z - uExt.y) / uExt.w);" },
     "uniform sampler2D uMask; varying vec2 vGrid;", `
     float water = texture2D(uMask, vGrid).g;
-    float ripple = 0.5 + 0.5 * sin(vGrid.x * 9000.0 + uTime * 0.8) * sin(vGrid.y * 13000.0 - uTime * 0.6);
+    float ripple = 0.5 + 0.5 * sin(vGrid.x * 9000.0 + uTime * 0.8) * sin(vGrid.y * 13000.0 - uTime * 0.6) * clamp(1.0 - fwidth(vGrid.y) * 9000.0, 0.0, 1.0);   // fades out before it can alias
+    ${DEEPEN}
     diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.05, 0.11, 0.13) + 0.03 * ripple, water * 0.8);`);
 }
 
@@ -132,27 +152,35 @@ async function start() {
   const groundAt = (x, y) => sampleGrid(G, x, y);
 
   // ---- renderer, scene, lights -------------------------------------------
-  const canvas = $("gl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
+  const canvas = $("gl"), renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });   // edges are smoothed by the multisampled composer target
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(45, 1, 5, 400000);
-  scene.fog = new THREE.FogExp2(0xb8c6d4, 0.000028);
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.shadowMap.autoUpdate = false;   // redrawn only when sun, tiles or view centre change
+  const scene = new THREE.Scene(), camera = new THREE.PerspectiveCamera(40, 1, 5, 400000);
+  scene.fog = new THREE.FogExp2(0xb8c6d4, 0.000014);
   const sky = new Sky(); sky.scale.setScalar(350000); scene.add(sky);
-  Object.assign(sky.material.uniforms.turbidity, { value: 9 }); sky.material.uniforms.rayleigh.value = 1.4;
-  sky.material.uniforms.mieCoefficient.value = 0.012; sky.material.uniforms.mieDirectionalG.value = 0.82;
-  const sunLight = new THREE.DirectionalLight(0xffffff, 3), hemi = new THREE.HemisphereLight(0xcfe0ff, 0x4a4438, 1);
+  Object.assign(sky.material.uniforms.turbidity, { value: 4.6 }); sky.material.uniforms.rayleigh.value = 1.7;
+  sky.material.uniforms.mieCoefficient.value = 0.006; sky.material.uniforms.mieDirectionalG.value = 0.8;
+  const sunLight = new THREE.DirectionalLight(0xffffff, 3), hemi = new THREE.HemisphereLight(0xcfe0ff, 0x8a8070, 1);
+  sunLight.castShadow = true; sunLight.shadow.bias = -0.0004;
   scene.add(sunLight, sunLight.target, hemi);
+  const under = new THREE.Mesh(new THREE.PlaneGeometry(900000, 900000), new THREE.MeshLambertMaterial({ color: 0x4d4a3c }));   // land colour past the edge of the imagery
+  under.rotation.x = -Math.PI / 2; under.position.y = 150; scene.add(under);
 
   const controls = new MapControls(camera, canvas);
-  Object.assign(controls, { enableDamping: true, dampingFactor: 0.12, minDistance: 80, maxDistance: 160000, maxPolarAngle: 1.5, zoomToCursor: true });
+  Object.assign(controls, { enableDamping: true, dampingFactor: 0.09, minDistance: 35, maxDistance: 160000, maxPolarAngle: Math.PI / 2 - 0.035, zoomToCursor: true, rotateSpeed: 0.6, zoomSpeed: 1.1 });
 
-  const composer = new EffectComposer(renderer), bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.7, 0.6, 0.8);
-  composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloom); composer.addPass(new OutputPass());
+  const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: 4 }));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.2, 0.55, 1.1);       // threshold above 1: only lit windows, lamps and sun glints bloom
+  composer.addPass(new RenderPass(scene, camera)); composer.addPass(bloom); composer.addPass(new OutputPass()); composer.addPass(new ShaderPass(GRADE));
 
   const LEVELS = Object.keys(QUALITY);
-  let level = "medium", quality = QUALITY[level], auto = true, dirty = true;
+  let level = "medium", quality = QUALITY[level], auto = true, dirty = true, shDirty = true;
   const touch = () => { dirty = true; };                   // something visible changed: draw one frame
   function resize() {
-    dirty = true;
+    dirty = shDirty = true;
+    for (const rt of [composer.renderTarget1, composer.renderTarget2]) if (rt.samples !== quality[4]) { rt.samples = quality[4]; rt.dispose(); }
+    const sh = sunLight.shadow;
+    if (quality[5] && sh.mapSize.x !== quality[5]) { sh.mapSize.set(quality[5], quality[5]); if (sh.map) { sh.map.dispose(); sh.map = null; } }
     const w = canvas.clientWidth, h = canvas.clientHeight, pr = Math.min(devicePixelRatio, quality[2]);
     renderer.setPixelRatio(pr); renderer.setSize(w, h, false); composer.setPixelRatio(pr); composer.setSize(w, h);
     camera.aspect = w / h; camera.updateProjectionMatrix();
@@ -163,11 +191,12 @@ async function start() {
   boot("Laying out the ground", 0.15);
   const loader = new THREE.TextureLoader(), tex = (f, srgb = true) => { const t = loader.load(DATA + f, touch); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t; };
   const mask = tex(M.masks.file, false);
-  scene.add(new THREE.Mesh(terrainGeometry(RG, 0, 0, RG.w - 1, RG.h - 1, [RE[0], RE[1], RE[2] - RE[0], RE[3] - RE[1]], 4), new THREE.MeshLambertMaterial({ map: tex(M.region.sat.file) })));
+  scene.add(new THREE.Mesh(terrainGeometry(RG, 0, 0, RG.w - 1, RG.h - 1, [RE[0], RE[1], RE[2] - RE[0], RE[3] - RE[1]], 4), terrainMaterial(tex(M.region.sat.file))));
   const satM = M.sat.tile * M.sat.res, per = satM / G.res;
   for (let ty = 0; ty < M.sat.ny; ty++) for (let tx = 0; tx < M.sat.nx; tx++) {
     const geo = terrainGeometry(G, tx * per, (M.sat.ny - 1 - ty) * per, per, per, [X0 + tx * satM, Y0 + ty * satM, satM, satM]);
-    scene.add(new THREE.Mesh(geo, terrainMaterial(tex(`sat_${tx}_${ty}.jpg`), mask, M.extent)));
+    const ground = new THREE.Mesh(geo, terrainMaterial(tex(`sat_${tx}_${ty}.jpg`), mask, M.extent));
+    ground.receiveShadow = true; scene.add(ground);
   }
   let trees = null;                                         // red channel of the mask, for scattering trees
   pixels(DATA + M.masks.file).then(img => { const a = new Uint8Array(img.width * img.height); for (let i = 0; i < a.length; i++) a[i] = img.data[i * 4]; trees = { a, w: img.width, res: M.masks.res };
@@ -188,6 +217,7 @@ async function start() {
     if (!mats.length) return null;
     const im = new THREE.InstancedMesh(treeGeo, treeMat, mats.length);
     mats.forEach((m, i) => im.setMatrixAt(i, m));
+    im.castShadow = true;
     return im;
   }
 
@@ -203,7 +233,8 @@ async function start() {
     g.setAttribute("position", new THREE.BufferAttribute(part.pos, 3)); g.setAttribute("normal", new THREE.BufferAttribute(part.nor, 3, true));
     g.setAttribute("color", new THREE.BufferAttribute(part.col, 3, true)); g.setAttribute("aInfo", new THREE.BufferAttribute(part.inf, 4));
     g.setIndex(new THREE.BufferAttribute(part.idx, 1)); g.computeBoundingSphere();
-    return new THREE.Mesh(g, mat);
+    const mesh = new THREE.Mesh(g, mat); mesh.receiveShadow = true; mesh.castShadow = mat === matB;
+    return mesh;
   }
   function drop(group) { if (!group) return; scene.remove(group); group.traverse(o => { if (o.geometry && o.geometry !== treeGeo) o.geometry.dispose(); }); }
   // Detail meshes that scroll out of range are parked, not freed, so panning back costs no rebuild.
@@ -223,7 +254,7 @@ async function start() {
   const farQueue = tiles.slice();
   function onDone(w, m) {
     w.load--;
-    const t = jobs.get(m.id); jobs.delete(m.id); dirty = true;
+    const t = jobs.get(m.id); jobs.delete(m.id); dirty = shDirty = true;
     if (m.error) { console.warn("tile", m.tx, m.ty, m.error); if (m.lod >= 2) farLeft--; else t.busy = false; return pump(); }
     const group = new THREE.Group(); group.position.set(t.ox, 0, -t.oy);
     for (const mesh of [toMesh(m.b, matB), toMesh(m.r, matR)]) if (mesh) group.add(mesh);
@@ -274,7 +305,7 @@ async function start() {
       if (!t.vis && t.want < 2) t.want = t.det ? t.detLod : 1;        // off-screen: keep what is there, never upgrade
       if (t.det && t.d > Math.max(r1, quality[1] * 0.5) * 1.2) park(t);
       const p = parked.get(t);
-      if (p && t.want < 2 && t.want !== t.detLod && p.lod <= t.want) { unpark(t); t.want = t.detLod; dirty = true; }
+      if (p && t.want < 2 && t.want !== t.detLod && p.lod <= t.want) { unpark(t); t.want = t.detLod; dirty = shDirty = true; }
     }
     nearQueue = tiles.filter(t => t.want < 2 && t.want !== t.detLod && !t.busy).sort((a, b) => (b.vis - a.vis) || (a.d - b.d));
     nearLabels(cx, cy, dcam);
@@ -287,11 +318,12 @@ async function start() {
     const s = sun(h, M.origin.lat, M.origin.lon), up = Math.sin(s.el), day = smooth(-0.06, 0.14, up), gold = day * (1 - smooth(0.08, 0.42, up));
     dir.set(Math.cos(s.el) * Math.sin(s.az), up, -Math.cos(s.el) * Math.cos(s.az));
     sky.material.uniforms.sunPosition.value.copy(dir);
-    sunLight.intensity = 5.0 * day; sunLight.color.setRGB(1, 0.62 + 0.38 * (1 - gold), 0.36 + 0.64 * (1 - gold));
-    hemi.intensity = 0.5 + 2.1 * day; hemi.color.setRGB(0.55 + 0.3 * day, 0.66 + 0.24 * day, 1);
+    // Strong warm sun against weak cool sky light: that contrast, with cast shadows, is what gives the buildings depth.
+    sunLight.intensity = 4.6 * day * (1 - 0.2 * gold); sunLight.color.setRGB(1, 0.95 - 0.33 * gold, 0.87 - 0.5 * gold);
+    hemi.intensity = 0.5 + 0.8 * day; hemi.color.setRGB(0.6 + 0.2 * gold, 0.72, 1 - 0.15 * gold);
     scene.fog.color.copy(tmp.copy(cNight).lerp(cDay, day).lerp(cGold, gold * 0.7));
-    renderer.toneMappingExposure = 0.85 - 0.2 * day;   // Sky addon is very bright by day
-    U.uNight.value = 1 - smooth(-0.1, 0.06, up); dirty = true;
+    renderer.toneMappingExposure = 0.85 + 0.3 * (1 - day);
+    U.uNight.value = 1 - smooth(-0.1, 0.06, up); dirty = shDirty = true;
     const hh = Math.floor(h) % 24, mm = Math.floor((h % 1) * 60);
     $("hourText").textContent = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")} IST`;
   }
@@ -305,10 +337,26 @@ async function start() {
     const y = groundAt(p.x, -p.z); controls.target.set(p.x, y, p.z);
     camera.position.set(p.x + p.d * Math.sin(p.tilt) * Math.sin(p.turn), y + p.d * Math.cos(p.tilt), p.z + p.d * Math.sin(p.tilt) * Math.cos(p.turn));
   }
-  function fly(to, ms = 1800) {
+  function fly(to, ms = 2600) {
     const from = pose(); to = { ...from, ...to };
     to.turn = from.turn + ((to.turn - from.turn + Math.PI * 3) % (Math.PI * 2) - Math.PI);
-    flight = { from, to, t0: performance.now(), ms };
+    // Long hops rise in an arc and come back down, so the ground never streaks past at street level.
+    const arc = Math.min(1.2, Math.hypot(to.x - from.x, to.z - from.z) / (6 * Math.max(from.d, to.d)));
+    flight = { from, to, t0: performance.now(), ms, arc };
+  }
+  // Sun shadows cover a square around the view centre that grows with zoom. The map is redrawn only when something moved.
+  let shR = 0; const shC = new THREE.Vector3(1e9, 0, 0);
+  function shadows(d) {
+    const on = quality[5] > 0 && dir.y > 0.03, c = controls.target, cam = sunLight.shadow.camera;
+    if (sunLight.castShadow !== on) { sunLight.castShadow = on; shDirty = true; }
+    if (!on) { sunLight.target.position.copy(c); sunLight.position.copy(c).addScaledVector(dir.y > 0 ? dir : tmpV.copy(dir).negate(), 50000); return; }
+    const r = Math.round(Math.min(3600, Math.max(280, d * 0.85)) / 40) * 40;
+    if (r === shR && !shDirty && c.distanceToSquared(shC) < (r * 0.04) ** 2) return;
+    // ponytail: shadow square re-centres in steps, so edges can shift a texel on a long pan; snap to the texel grid if that shows
+    cam.left = cam.bottom = -r; cam.right = cam.top = r; cam.near = 10; cam.far = r * 8; cam.updateProjectionMatrix();
+    sunLight.shadow.normalBias = 0.5 + r / 650;
+    sunLight.target.position.copy(c); sunLight.position.copy(c).addScaledVector(dir, r * 4); sunLight.target.updateMatrixWorld();
+    shC.copy(c); shR = r; shDirty = false; renderer.shadowMap.needsUpdate = true;
   }
   const places = (M.places || []).concat([{ n: "Whole city", x: 0, y: 0, d: 62000, tilt: 0.75, turn: 0 }]);
   for (const p of places) {
@@ -400,32 +448,34 @@ async function start() {
   function setLevel(l) { level = l; quality = QUALITY[l]; $("qAuto").textContent = `Auto (${l})`; resize(); schedule(); }
   $("quality").onchange = e => { auto = e.target.value === "auto"; if (!auto) setLevel(e.target.value); };
   $("tInfo").onclick = () => { $("info").hidden = !$("info").hidden; }; $("infoX").onclick = () => { $("info").hidden = true; };
-  const names = { measured: "Mapped or published height", floors: "Mapped floor count", satellite: "Satellite estimate", raster: "Outlined from satellite height", default: "Footprint-based guess" }, st = M.stats;
+  const names = { measured: "Mapped or published height", floors: "Mapped floor count", satellite: "Satellite estimate", raster: "Outlined from satellite height", planned: "Planned, from published project details", default: "Footprint-based guess" }, st = M.stats;
   $("srcBars").innerHTML = Object.keys(names).filter(k => st[k]).map(k => `<span>${names[k]}</span><div><i style="width:${Math.max(1, 100 * st[k] / st.total)}%"></i></div><span>${st[k].toLocaleString("en-IN")}</span>`).join("");
   $("srcNote").textContent = `${(100 * (st.measured + st.floors) / st.total).toFixed(1)}% of buildings carry a mapped height or floor count. The rest are estimated.`;
   $("srcList").innerHTML = M.sources.map(s => `<li>${s.replace(/[<&]/g, "")}</li>`).join("");
 
   // ---- go -----------------------------------------------------------------
   const first = places[0];
-  place({ x: first.x, z: -first.y, d: 5200, tilt: 1.12, turn: -0.5 });
+  place({ x: first.x, z: -first.y, d: 2800, tilt: 1.2, turn: -0.5 });
   setHour(+$("hour").value); resize(); schedule();
   let last = performance.now(), frame = 0, lastDraw = 0, wasActive = false, ema = 16, slow = 0, fast = 0, hold = 3;
   renderer.setAnimationLoop(now => {
     const dt = Math.min(0.1, (now - last) / 1000); last = now; U.uTime.value = now / 1000;
     const flying = !!flight || keys.size > 0;
     if (flight) {
-      const k = Math.min(1, (now - flight.t0) / flight.ms), e = k * k * (3 - 2 * k), a = flight.from, b = flight.to, mix = key => a[key] + (b[key] - a[key]) * e;
-      place({ x: mix("x"), z: mix("z"), d: Math.exp(Math.log(a.d) + (Math.log(b.d) - Math.log(a.d)) * e), tilt: mix("tilt"), turn: mix("turn") });
+      const k = Math.min(1, (now - flight.t0) / flight.ms), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(2 - 2 * k, 3) / 2, a = flight.from, b = flight.to, mix = key => a[key] + (b[key] - a[key]) * e;
+      place({ x: mix("x"), z: mix("z"), d: Math.exp(Math.log(a.d) + (Math.log(b.d) - Math.log(a.d)) * e) * (1 + flight.arc * Math.sin(Math.PI * k)), tilt: mix("tilt"), turn: mix("turn") });
       if (k === 1) flight = null;
     } else if (keys.size) {
       const p = pose(), step = p.d * 0.9 * dt, f = (keys.has("KeyW") || keys.has("ArrowUp") ? 1 : 0) - (keys.has("KeyS") || keys.has("ArrowDown") ? 1 : 0), r = (keys.has("KeyD") || keys.has("ArrowRight") ? 1 : 0) - (keys.has("KeyA") || keys.has("ArrowLeft") ? 1 : 0);
       if (f || r) { p.x += (-Math.sin(p.turn) * f + Math.cos(p.turn) * r) * step; p.z += (-Math.cos(p.turn) * f - Math.sin(p.turn) * r) * step; place(p); }
     }
     controls.target.x = Math.min(RE[2], Math.max(RE[0], controls.target.x)); controls.target.z = Math.min(-RE[1], Math.max(-RE[3], controls.target.z));
-    const active = controls.update() || flying;              // update() is true while the camera is still easing
+    const gy = groundAt(controls.target.x, -controls.target.z), ty = controls.target.y;
+    controls.target.y = Math.abs(gy - ty) < 0.05 ? gy : ty + (gy - ty) * Math.min(1, dt * 6);   // the pivot rides the terrain, eased
+    const active = controls.update() || flying || controls.target.y !== gy;   // update() is true while the camera is still easing
     const d = camera.position.distanceTo(controls.target);
-    // Idle: nothing moved. Keep traffic and water ticking at 30 fps only when close enough to see them; otherwise draw nothing.
-    const ticking = level !== "lite" && d < 4500 && now - lastDraw >= 33;
+    // Idle: nothing moved. Keep traffic and water moving at full frame rate when close enough to see them; otherwise draw nothing.
+    const ticking = level !== "lite" && d < 4500;
     if (wasActive && !active) schedule();
     wasActive = active;
     if (!active && !dirty && !ticking) return;
@@ -437,17 +487,20 @@ async function start() {
       else if (auto && fast > 300 && i < hold) { setLevel(LEVELS[i + 1]); fast = 0; ema = 20; }
     }
     dirty = false; lastDraw = now;
-    const floor = groundAt(camera.position.x, -camera.position.z) + 8;
+    const floor = groundAt(camera.position.x, -camera.position.z) + 6;
     if (camera.position.y < floor) camera.position.y = floor;
-    scene.fog.density = Math.min(0.000028, 0.55 / d);       // thin the haze when zoomed out, or the city vanishes
-    camera.near = Math.max(2, d * 0.02); camera.far = Math.max(120000, d * 6); camera.updateProjectionMatrix();
-    sky.position.copy(camera.position);
-    sunLight.target.position.copy(controls.target); sunLight.position.copy(controls.target).addScaledVector(dir.y > 0 ? dir : tmpV.copy(dir).negate(), 50000);
+    scene.fog.density = Math.min(0.000014, 0.22 / d);       // light haze near the ground, almost none from high up
+    const near = Math.min(250, Math.max(1.5, (camera.position.y - floor + 6) * 0.06));       // near plane from height, so walls never clip at street level
+    if (Math.abs(camera.near - near) / near > 0.08) camera.near = near;
+    camera.far = Math.max(120000, d * 6); camera.updateProjectionMatrix();
+    sky.position.copy(camera.position); under.position.set(camera.position.x, 150, camera.position.z);
+    shadows(d);
     $("needle").style.transform = `rotate(${Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z)}rad)`;
     if (frame % 15 === 0) schedule();
     if (frame % 2 === 0) drawLabels();
     if (frame++ % 30 === 0) readout();
-    if (quality[3] && U.uNight.value > 0.05) { bloom.strength = 0.75 * U.uNight.value; composer.render(); } else renderer.render(scene, camera);
+    bloom.enabled = !!quality[3]; bloom.strength = 0.2 + 0.5 * U.uNight.value;
+    composer.render();
   });
   window.__noida = { find, fly, setHour, pose, tiles, renderer, parked, get level() { return level; }, get fine() { return fine.length; } };    // debugging handle
 }

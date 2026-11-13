@@ -282,6 +282,106 @@ def raster_heights(g, known):
     return est, towers, blobs
 
 
+# ---------------------------------------------------------------- project sites (Realty360)
+PROJECTS = HERE / "projects.csv"                          # written by projects.py; see its docstring
+
+
+def project_sites(moved=True):
+    """Rows of projects.csv that have a site, with grid x, y. Projects that share one point (several placed at one
+    sector centre) are spread on a 170 m ring so their pins and towers do not stack. With moved=True a project whose
+    towers were generated stands at the middle of those towers (cache/project_moved.json, written by the pack stage)."""
+    import csv
+    if not PROJECTS.exists():
+        return []
+    rows = [r for r in csv.DictReader(PROJECTS.open(encoding="utf-8")) if r["lat"]]
+    x, y = to_grid([float(r["lon"]) for r in rows], [float(r["lat"]) for r in rows])
+    seen = {}
+    for r, px, py in zip(rows, x, y):
+        k = (round(px / 30), round(py / 30))
+        i = seen[k] = seen.get(k, -1) + 1
+        r["x"], r["y"] = float(px) + (170 * math.cos(i * 1.1) if i else 0), float(py) + (170 * math.sin(i * 1.1) if i else 0)
+    mv = CACHE / "project_moved.json"
+    if moved and mv.exists():
+        at = json.loads(mv.read_text(encoding="utf-8"))
+        for r in rows:
+            if r["slug"] in at and r["need"] == "planned":
+                r["x"], r["y"] = at[r["slug"]]
+    return rows
+
+
+def project_buildings(g):
+    """Towers for project sites where the satellite data shows open ground (need=planned in projects.csv).
+
+    These are generated, not surveyed: tower count, floors and land area come from published project details
+    (facts_url), the footprints are plain rectangles on a grid turned to the nearest road. A tower is only placed on
+    ground that is free of mapped buildings, roofs in the height raster and roads. Returns (polygons, heights, names, classes)."""
+    from shapely.geometry import Polygon
+    sites = [r for r in project_sites(moved=False) if r["need"] == "planned"]
+    if not sites:
+        return [], [], [], []
+    hr = np.load(CACHE / f"{OB_NAME}.npy", mmap_mode="r")
+    tree = shapely.STRtree(g)
+    rg, rt = load_geoms("segment", ["subtype"])
+    rg = rg[(rt["subtype"] == "road").values]
+    roads = shapely.STRtree(rg)
+    placed, out, moved = [], ([], [], [], []), {}
+
+    def free(poly):
+        x0, y0, x1, y1 = poly.bounds
+        if not (X0 + 50 < x0 and x1 < X1 - 50 and Y0 + 50 < y0 and y1 < Y1 - 50):
+            return False
+        win = hr[int((Y1 - y1) / OB_RES) - 1:int((Y1 - y0) / OB_RES) + 2, int((x0 - X0) / OB_RES) - 1:int((x1 - X0) / OB_RES) + 2]
+        if (np.asarray(win) > 2.5).any() or any(poly.distance(q) < 14 for q in placed):
+            return False
+        return not len(tree.query(poly.buffer(6), predicate="intersects")) and not len(roads.query(poly.buffer(9), predicate="intersects"))
+
+    for r in sites:
+        n = int(r["towers"] or 4)
+        floors = int(r["floors"] or (10 if r["type"] == "commercial" else 28))
+        villa = floors <= 4
+        fw, fd = (13, 15) if villa else (26, 34) if r["type"] != "commercial" else (40, 55)
+        area = float(r["acres"] or 0) * 4047 or n * (fw + 30) * (fd + 30)
+        pitch = max(fw + (10 if villa else 26), math.sqrt(area / n) * 0.95)
+        cols = math.ceil(math.sqrt(n * 1.5))
+        ang, here = 0.0, shapely.Point(r["x"], r["y"])          # turn the grid to the nearest road
+        idx = roads.query(here.buffer(350), predicate="intersects")
+        if len(idx):
+            line = rg[idx[np.argmin(shapely.distance(rg[idx], here))]]
+            c = np.asarray(line.coords if line.geom_type == "LineString" else line.geoms[0].coords)
+            k = int(np.argmin(np.hypot(c[:, 0] - r["x"], c[:, 1] - r["y"])))
+            a, b = c[max(0, k - 1)], c[min(len(c) - 1, k + 1)]
+            ang = math.atan2(b[1] - a[1], b[0] - a[0])
+        ca, sa = math.cos(ang), math.sin(ang)
+        best = []
+        for dist in (0, 200, 400, 650):                      # the site first, then nearby open ground: the listed point is often the gate, not the plot
+            for k in range(8 if dist else 1):
+                cx, cy = r["x"] + dist * math.cos(k * math.pi / 4), r["y"] + dist * math.sin(k * math.pi / 4)
+                fit = []
+                for j in range(-cols, cols + 1):
+                    for i in range(-cols, cols + 1):
+                        u, v = i * pitch, j * pitch
+                        px, py = cx + u * ca - v * sa, cy + u * sa + v * ca
+                        corners = [(px + (a * fw / 2) * ca - (b * fd / 2) * sa, py + (a * fw / 2) * sa + (b * fd / 2) * ca) for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
+                        fit.append((math.hypot(u, v), Polygon(corners)))
+                fit = [q for _, q in sorted(fit, key=lambda t: t[0]) if free(q)][:n]
+                if len(fit) > len(best):
+                    best = fit
+                if len(best) == n:
+                    break
+            if len(best) == n:
+                break
+        h = floors * 3.1 + 1
+        for q in best:
+            placed.append(q)
+            out[0].append(q); out[1].append(h); out[2].append(r["name"]); out[3].append("commercial" if r["type"] == "commercial" else "")
+        if best:
+            c = shapely.centroid(shapely.union_all(best))
+            moved[r["slug"]] = [round(c.x, 1), round(c.y, 1)]
+        print(f"  planned {r['name']:30s} {len(best)}/{n} towers, {floors} floors ({h:.0f} m)")
+    (CACHE / "project_moved.json").write_text(json.dumps(moved), encoding="utf-8")
+    return out
+
+
 def load_buildings(dem, sat):
     g, t = load_geoms("building", ["height", "num_floors", "class", "subtype", "names"])
     idx = np.repeat(np.arange(len(g)), shapely.get_num_geometries(g))
@@ -309,6 +409,13 @@ def load_buildings(dem, sat):
         cls = np.concatenate([cls, cls[par], np.full(len(blobs), "", object)])
         names = np.concatenate([names, np.full(n_new, None, object)])
         forced = np.concatenate([forced, np.full(len(towers), "satellite"), np.full(len(blobs), "raster")])
+        pg, ph, pn, pc = project_buildings(g)
+        if pg:
+            g = np.concatenate([g, np.array(pg, object)])
+            est = np.concatenate([est, ph])
+            hv, fl = np.concatenate([hv, np.zeros(len(pg))]), np.concatenate([fl, np.zeros(len(pg))])
+            cls, names = np.concatenate([cls, np.array(pc, object)]), np.concatenate([names, np.array(pn, object)])
+            forced = np.concatenate([forced, np.full(len(pg), "planned")])
     area = shapely.area(g)
     cen = shapely.centroid(g)
     cx, cy = shapely.get_x(cen), shapely.get_y(cen)
@@ -520,6 +627,12 @@ def stage_search():
     for n, x, y, z, h in (json.loads(nb.read_text(encoding="utf-8")) if nb.exists() else []):
         if clean(n):
             rows.append((1, h, clean(n), x, y, z))
+    sites = project_sites()                                  # every located project is a society label and a search entry
+    for r in sites:
+        rows.append((0, 1e12, r["name"], r["x"], r["y"], None))
+    (OUT / "projects.json").write_text(json.dumps(
+        [{"slug": r["slug"], "x": round(r["x"]), "y": round(r["y"]), "need": r["need"], "source": r["source"].split(":")[0]} for r in sites],
+        separators=(",", ":")), encoding="utf-8")
     rows.sort(key=lambda r: (r[0], -r[1]))
     seen, chunks, n_soc = set(), {}, 0
     for tier, _, n, x, y, z in rows:
@@ -599,7 +712,7 @@ def stage_pack():
                    "height": {"file": "region_h.png", "res": 80, "offset": H_OFF, "scale": H_SCALE}},
         "chunks": chunks,
         "sky": {"file": "sky", "chunks": len(sky_parts), "buildings": sky_b},
-        "stats": {"total": len(g), **{s: int((src == s).sum()) for s in ("measured", "floors", "satellite", "raster", "default")}},
+        "stats": {"total": len(g), **{s: int((src == s).sum()) for s in ("measured", "floors", "satellite", "raster", "planned", "default")}},
         "labels": labels(g, info),
         "places": [{"n": n, "x": round(float(x)), "y": round(float(y)), "d": d, "turn": turn}
                    for (n, la, lo, d, turn), x, y in zip(PLACES, *to_grid([p[2] for p in PLACES], [p[1] for p in PLACES]))],
