@@ -185,6 +185,7 @@ def stage_locate():
                 row.update(lat=f"{hit[0]:.6f}", lon=f"{hit[1]:.6f}", source="geocoder", matched=hit[2], confidence="0.70")
                 continue
         row.update(lat="", lon="", source="", matched="", confidence="")
+    apply_web(rows)
     # Not named on any map: stand it in its sector. The sector is where already-located projects of the same
     # listing sector are, else the sector centre from the map. Good to about a kilometre; marked low confidence.
     groups = {}
@@ -211,39 +212,125 @@ def stage_locate():
     print("unresolved:", "; ".join(f"{r['name']} [{r['sector']}, {r['city']}]" for r in rows.values() if not r["source"]))
 
 
+WEB = HERE / "web_sites.csv"
+
+
+def apply_web(rows):
+    """Coordinates and facts read from property portal pages (web_sites.csv), for projects no map names.
+    A point is used only when it is inside the project's town, within 6 km of where the listing's sector puts the
+    project, and not a placeholder: portals give one stock point for a whole area, so a point shared by two or more
+    different projects is rejected."""
+    import csv
+    if not WEB.exists():
+        return
+    web = [r for r in csv.DictReader(l for l in WEB.read_text(encoding="utf-8").splitlines() if not l.startswith("#"))]
+    seen = {}
+    for w in web:
+        seen.setdefault((round(float(w["lat"]), 4), round(float(w["lon"]), 4)), set()).add(w["name"])
+    by_name = {r["name"]: r for r in rows.values()}
+    used, refused = [], []
+    for w in web:
+        r = by_name.get(w["name"])
+        if not r or r["source"] in ("manual", "web") or (r["source"] or "").startswith("map:"):
+            continue
+        for k in ("towers", "floors", "acres"):
+            if w[k] and not r[k]:
+                r[k] = w[k]
+        if w[k] and not r["facts_url"]:
+            r["facts_url"] = w["url"]
+        lat, lon = float(w["lat"]), float(w["lon"])
+        why = None
+        if len(seen[(round(lat, 4), round(lon, 4))]) > 1:
+            why = "placeholder point shared by " + ", ".join(sorted(seen[(round(lat, 4), round(lon, 4))]))
+        elif not in_town(r["city"], lat, lon):
+            why = "outside " + r["city"]
+        elif r["lat"]:
+            x0, y0 = to_grid([float(r["lon"])], [float(r["lat"])])
+            x1, y1 = to_grid([lon], [lat])
+            if math.hypot(x1[0] - x0[0], y1[0] - y0[0]) > 6000:
+                why = "more than 6 km from its listed sector"
+        if why:
+            refused.append(f"{w['name']} ({why})")
+            continue
+        r.update(lat=f"{lat:.6f}", lon=f"{lon:.6f}", source="web", matched=w["url"][:200], confidence="0.80")
+        used.append(w["name"])
+    print(f"web: used {len(used)}: {', '.join(used)}")
+    print(f"web: refused {len(refused)}: {'; '.join(refused)}")
+
+
+def kind_of(r):
+    """villa, commercial or tower. Decides how tall the building at a project's site must be to count as its building."""
+    floors = int(r["floors"]) if (r["floors"] or "").isdigit() else 0
+    if "villa" in r["name"].lower() or 0 < floors <= 4:
+        return "villa"
+    return "commercial" if r["type"] == "commercial" else "tower"
+
+
 def stage_audit():
-    """need = built, lowrise, planned or outside (off the detailed grid). Judged from the 2023 satellite roof-height raster."""
+    """need = built, lowrise, planned or outside (off the detailed grid).
+
+    Judged from the 2023 satellite roof-height raster at the pin itself, not a wide circle: a project counts as built
+    only when its kind of building stands within 40 m of its pin (towers 20 m or more, villas and shops 6 m or more).
+    Otherwise the pin moves onto the nearest such building that no other project stands nearer to: within 250 m for a
+    ready or active project (its pin may be a gate or sales office), within 160 m for an unfinished project whose
+    pin is the centre of its mapped plot (a big society's centre can sit in its courtyard). Any other unfinished
+    project gets generated buildings, because the towers beside it may belong to an unrelated society. Everything else gets buildings generated from its published details."""
     rows = read_rows()
     hr = np.load(CACHE / f"{OB_NAME}.npy", mmap_mode="r")
+    grid = {}
     for r in rows.values():
-        if not r["lat"]:
+        if r["lat"]:
+            x, y = to_grid([float(r["lon"])], [float(r["lat"])])
+            grid[r["slug"]] = (float(x[0]), float(y[0]))
+
+    def cells(x, y, radius, floor):
+        """Cells of the height raster within `radius` of (x, y) with a roof at `floor` metres or higher, as grid points."""
+        c, w, rr = int((x - X0) / OB_RES), int(radius / OB_RES), int((Y1 - y) / OB_RES)
+        win = np.asarray(hr[max(0, rr - w):rr + w + 1, max(0, c - w):c + w + 1])
+        jj, ii = np.nonzero(win >= floor)
+        px = X0 + (max(0, c - w) + ii + 0.5) * OB_RES
+        py = Y1 - (max(0, rr - w) + jj + 0.5) * OB_RES
+        keep = np.hypot(px - x, py - y) <= radius
+        return px[keep], py[keep]
+
+    moved = 0
+    for r in rows.values():
+        if r["slug"] not in grid:
             r["need"] = ""
             continue
-        x, y = to_grid([float(r["lon"])], [float(r["lat"])])
-        x, y = float(x[0]), float(y[0])
+        x, y = grid[r["slug"]]
         if not (X0 + 300 < x < X1 - 300 and Y0 + 300 < y < Y1 - 300):
             r["need"] = "outside"
             continue
-        def roofs(radius):                                   # (m2 of roof at 20 m or higher, m2 of any roof) around the site
-            c, w, rr = int((x - X0) / OB_RES), int(radius / OB_RES), int((Y1 - y) / OB_RES)
-            win = np.asarray(hr[rr - w:rr + w, c - w:c + w])
-            return (win >= 20).sum() * OB_RES ** 2, (win > 2.5).sum() * OB_RES ** 2
-        tall, low = roofs(150)
-        open_now = r["status"] in ("Ready to Move", "Active")
-        if tall >= 600:
-            r["need"] = "built"                              # towers stand there
-        elif low >= 3000 and (open_now or r["type"] == "commercial"):
-            r["need"] = "lowrise"                            # a real mall, plaza or villa cluster stands there: label only
-        elif open_now and roofs(400)[0] >= 2000:
-            r["need"] = "built"                              # the map point is the gate or sales office; the towers are beside it
-        else:
-            r["need"] = "planned"                            # open ground: towers are added from published project details
+        kind = kind_of(r)
+        floor = 20 if kind == "tower" else 6
+        if len(cells(x, y, 40, floor)[0]) >= 4:              # at least 64 m2 of roof at that height
+            r["need"] = "built" if kind == "tower" else "lowrise"
+            continue
+        if r["source"] != "manual":
+            # Ready projects: the pin may be a gate or sales office, so look up to 250 m. Others: only their own plot.
+            # An unfinished project only takes towers inside its own mapped plot: next to it may stand an unrelated society.
+            reach = 250 if r["status"] in ("Ready to Move", "Active") else 160 if r["source"] == "map:land_use" else 0
+            px, py = cells(x, y, reach, floor) if reach else (np.array([]), np.array([]))
+            others = [v for k, v in grid.items() if k != r["slug"]]
+            # A tower belongs to this project only if no other project's pin is nearer to it, or within 90 m of it.
+            free = [(math.hypot(a - x, b - y), a, b) for a, b in zip(px, py)
+                    if all(math.hypot(a - ox, b - oy) > max(90, math.hypot(a - x, b - y)) for ox, oy in others)]
+            if len(free) >= 4:
+                _, a, b = min(free)
+                lon, lat = to_lonlat([a], [b])
+                r.update(lat=f"{lat[0]:.6f}", lon=f"{lon[0]:.6f}", matched=(r["matched"] + " (moved onto its towers)")[:200])
+                grid[r["slug"]] = (a, b)
+                r["need"] = "built" if kind == "tower" else "lowrise"
+                moved += 1
+                continue
+        r["need"] = "planned"
     write_rows(rows)
     by = {}
     for r in rows.values():
         by[r["need"] or "unlocated"] = by.get(r["need"] or "unlocated", 0) + 1
-    print("audit:", by)
-    print("planned:", "; ".join(f"{r['name']} ({r['status']})" for r in rows.values() if r["need"] == "planned"))
+    print("audit:", by, "| pins moved onto their towers:", moved)
+    print("planned:", "; ".join(f"{r['name']} ({r['status']}, facts {'yes' if r['towers'] else 'no'})" for r in rows.values() if r["need"] == "planned"))
 
 
 if __name__ == "__main__":

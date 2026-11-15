@@ -283,6 +283,8 @@ def raster_heights(g, known):
 
 
 # ---------------------------------------------------------------- project sites (Realty360)
+# Named places the label data only holds as shop-level labels, but people search for as societies.
+EXTRA_SEARCH = [{"n": "Skytech Matrott", "x": -4349, "y": 7783, "k": "soc"}]
 PROJECTS = HERE / "projects.csv"                          # written by projects.py; see its docstring
 
 
@@ -309,40 +311,83 @@ def project_sites(moved=True):
     return rows
 
 
-def project_buildings(g):
-    """Towers for project sites where the satellite data shows open ground (need=planned in projects.csv).
+def project_kind(r):
+    """villa, commercial or tower (same rule as projects.py kind_of)."""
+    floors = int(r["floors"]) if (r["floors"] or "").isdigit() else 0
+    if "villa" in r["name"].lower() or 0 < floors <= 4:
+        return "villa"
+    return "commercial" if r["type"] == "commercial" else "tower"
 
-    These are generated, not surveyed: tower count, floors and land area come from published project details
-    (facts_url), the footprints are plain rectangles on a grid turned to the nearest road. A tower is only placed on
-    ground that is free of mapped buildings, roofs in the height raster and roads. Returns (polygons, heights, names, classes)."""
+
+def tower_size(r, sizes):
+    """Footprint (width, depth) in metres for one generated building of a project, from its published details.
+
+    Residential towers: units per floor times the average unit area, plus 35% for walls, lifts and corridors.
+    Two units per floor above 2,500 sq ft (luxury floor plates), four below. Commercial blocks: 40% of the plot,
+    shared between its blocks. Villas: a fixed 13 x 15 m house. Every size is clamped to what Noida towers measure."""
+    kind = project_kind(r)
+    if kind == "villa":
+        return 13.0, 15.0
+    n = max(1, int(r["towers"] or 4))
+    acres = float(r["acres"] or 0)
+    if kind == "commercial":
+        area = min(5000.0, max(700.0, (acres * 4047 * 0.4 / n) if acres else 1800.0))
+        return math.sqrt(area / 1.6) * 1.6, math.sqrt(area / 1.6)
+    nums = [float(v) for v in re.findall(r"\d+(?:\.\d+)?", sizes.get(r["slug"], "") or "") if 300 <= float(v) <= 12000]
+    sqft = sum(nums) / len(nums) if nums else 1800.0
+    per_floor = 2 if sqft > 2500 else 4
+    area = min(1500.0, max(380.0, per_floor * sqft * 0.0929 * 1.35))
+    return math.sqrt(area / 1.3) * 1.3, math.sqrt(area / 1.3)
+
+
+PLANNED = {}                                              # slug -> generated polygons, filled by project_buildings
+
+
+def project_buildings(g, est):
+    """Buildings for project sites where the satellite data shows no building of the project's kind (need=planned).
+
+    Generated, not surveyed: tower count, floors and land area come from published project details (facts_url),
+    each footprint is sized from the project's unit sizes (tower_size), towers stand on a grid turned to the nearest
+    road. A tower may cover small sheds (site offices, labour huts on a building site), which are then removed, but
+    never a real building, a roof over 10 m in the height raster, or a road. The grid starts on the site itself and
+    moves at most 240 m when the site is built over. Returns (polygons, heights, names, classes, indices to remove)."""
     from shapely.geometry import Polygon
     sites = [r for r in project_sites(moved=False) if r["need"] == "planned"]
     if not sites:
-        return [], [], [], []
+        return [], [], [], [], set()
+    snap = CACHE / "projects_api.json"
+    sizes = {p["slug"]: p.get("size") for p in json.loads(snap.read_text(encoding="utf-8"))} if snap.exists() else {}
     hr = np.load(CACHE / f"{OB_NAME}.npy", mmap_mode="r")
     tree = shapely.STRtree(g)
+    area_g = shapely.area(g)
     rg, rt = load_geoms("segment", ["subtype"])
     rg = rg[(rt["subtype"] == "road").values]
     roads = shapely.STRtree(rg)
-    placed, out, moved = [], ([], [], [], []), {}
+    placed, out, moved, drop = [], ([], [], [], []), {}, set()
 
     def free(poly):
+        """None when the footprint cannot stand here, else the indices of the sheds it covers."""
         x0, y0, x1, y1 = poly.bounds
         if not (X0 + 50 < x0 and x1 < X1 - 50 and Y0 + 50 < y0 and y1 < Y1 - 50):
-            return False
+            return None
         win = hr[int((Y1 - y1) / OB_RES) - 1:int((Y1 - y0) / OB_RES) + 2, int((x0 - X0) / OB_RES) - 1:int((x1 - X0) / OB_RES) + 2]
-        if (np.asarray(win) > 2.5).any() or any(poly.distance(q) < 14 for q in placed):
-            return False
-        return not len(tree.query(poly.buffer(6), predicate="intersects")) and not len(roads.query(poly.buffer(9), predicate="intersects"))
+        if (np.asarray(win) > 10).any() or any(poly.distance(q) < 12 for q in placed):
+            return None
+        if len(roads.query(poly.buffer(8), predicate="intersects")):
+            return None
+        hit = tree.query(poly.buffer(4), predicate="intersects")
+        if any(area_g[i] > 400 or est[i] > 10 for i in hit):
+            return None
+        return set(int(i) for i in hit)
 
     for r in sites:
-        n = int(r["towers"] or 4)
-        floors = int(r["floors"] or (10 if r["type"] == "commercial" else 28))
-        villa = floors <= 4
-        fw, fd = (13, 15) if villa else (26, 34) if r["type"] != "commercial" else (40, 55)
+        kind = project_kind(r)
+        n = max(1, int(r["towers"] or (24 if kind == "villa" else 1 if kind == "commercial" else 4)))
+        floors = int(r["floors"] or (3 if kind == "villa" else 10 if kind == "commercial" else 28))
+        fw, fd = tower_size(r, sizes)
         area = float(r["acres"] or 0) * 4047 or n * (fw + 30) * (fd + 30)
-        pitch = max(fw + (10 if villa else 26), math.sqrt(area / n) * 0.95)
-        cols = math.ceil(math.sqrt(n * 1.5))
+        pitch = max(fw + (8 if kind == "villa" else 22), math.sqrt(area / n) * 0.95)
+        cols = math.ceil(math.sqrt(n * 1.5)) + 1
         ang, here = 0.0, shapely.Point(r["x"], r["y"])          # turn the grid to the nearest road
         idx = roads.query(here.buffer(350), predicate="intersects")
         if len(idx):
@@ -352,20 +397,26 @@ def project_buildings(g):
             a, b = c[max(0, k - 1)], c[min(len(c) - 1, k + 1)]
             ang = math.atan2(b[1] - a[1], b[0] - a[0])
         ca, sa = math.cos(ang), math.sin(ang)
-        best = []
-        for dist in (0, 200, 400, 650):                      # the site first, then nearby open ground: the listed point is often the gate, not the plot
+        best, best_sheds = [], set()
+        for dist in (0, 80, 160, 240):                       # the site first; the listed point can be a gate or road
             for k in range(8 if dist else 1):
                 cx, cy = r["x"] + dist * math.cos(k * math.pi / 4), r["y"] + dist * math.sin(k * math.pi / 4)
-                fit = []
+                cand = []
                 for j in range(-cols, cols + 1):
                     for i in range(-cols, cols + 1):
                         u, v = i * pitch, j * pitch
                         px, py = cx + u * ca - v * sa, cy + u * sa + v * ca
                         corners = [(px + (a * fw / 2) * ca - (b * fd / 2) * sa, py + (a * fw / 2) * sa + (b * fd / 2) * ca) for a, b in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
-                        fit.append((math.hypot(u, v), Polygon(corners)))
-                fit = [q for _, q in sorted(fit, key=lambda t: t[0]) if free(q)][:n]
+                        cand.append((math.hypot(u, v), Polygon(corners)))
+                fit, sheds = [], set()
+                for _, q in sorted(cand, key=lambda t: t[0]):
+                    if len(fit) == n:
+                        break
+                    under = free(q)
+                    if under is not None and all(q.distance(f) >= 12 for f in fit):
+                        fit.append(q); sheds |= under
                 if len(fit) > len(best):
-                    best = fit
+                    best, best_sheds = fit, sheds
                 if len(best) == n:
                     break
             if len(best) == n:
@@ -373,13 +424,53 @@ def project_buildings(g):
         h = floors * 3.1 + 1
         for q in best:
             placed.append(q)
-            out[0].append(q); out[1].append(h); out[2].append(r["name"]); out[3].append("commercial" if r["type"] == "commercial" else "")
+            out[0].append(q); out[1].append(h); out[2].append(r["name"]); out[3].append("commercial" if kind == "commercial" else "")
+        drop |= best_sheds
+        PLANNED[r["slug"]] = best
         if best:
             c = shapely.centroid(shapely.union_all(best))
             moved[r["slug"]] = [round(c.x, 1), round(c.y, 1)]
-        print(f"  planned {r['name']:30s} {len(best)}/{n} towers, {floors} floors ({h:.0f} m)")
+        print(f"  planned {r['name']:30s} {len(best)}/{n} {kind}s {fw:.0f}x{fd:.0f} m, {floors} floors ({h:.0f} m), {len(best_sheds)} sheds removed")
     (CACHE / "project_moved.json").write_text(json.dumps(moved), encoding="utf-8")
-    return out
+    return (*out, drop)
+
+
+def project_footprints(g, info):
+    """Which buildings belong to which project, for the map overlay (clickable buildings, roof markers).
+
+    Generated sites: their generated towers. Other sites: buildings of the project's kind (20 m or more for towers,
+    6 m or more for villas and shops) within 110 m of the pin, each given to the nearest project pin only, so a
+    neighbouring society is never claimed twice. Writes cache/project_fp.json: slug -> {fp: outlines, h: roof height}."""
+    sites = project_sites()
+    if not sites:
+        return
+    px, py = np.array([r["x"] for r in sites]), np.array([r["y"] for r in sites])
+    cx, cy, h = info["cx"], info["cy"], info["h"]
+    out = {}
+    for k, r in enumerate(sites):
+        if r["need"] == "planned" and PLANNED.get(r["slug"]):
+            polys, hs = PLANNED[r["slug"]], [float(int(r["floors"] or 28) * 3.1 + 1)] * len(PLANNED[r["slug"]])
+        else:
+            floor = 20 if project_kind(r) == "tower" else 6
+            near = np.nonzero((np.abs(cx - r["x"]) < 160) & (np.abs(cy - r["y"]) < 160) & (h >= floor))[0]
+            d = np.hypot(cx[near] - r["x"], cy[near] - r["y"])
+            mine = [i for i, di in zip(near, d) if di <= 110 and np.argmin(np.hypot(px - cx[i], py - cy[i])) == k]
+            if not mine and len(near):
+                mine = [near[int(np.argmin(d))]]          # nothing at the pin: the nearest building of its kind
+            if not mine:                                  # the raster saw a tower here that the footprint estimate puts lower
+                low = np.nonzero((np.abs(cx - r["x"]) < 160) & (np.abs(cy - r["y"]) < 160) & (h >= 15))[0]
+                if len(low):
+                    mine = [low[int(np.argmin(np.hypot(cx[low] - r["x"], cy[low] - r["y"])))]]
+            mine = sorted(mine, key=lambda i: np.hypot(cx[i] - r["x"], cy[i] - r["y"]))[:30]
+            polys, hs = [g[i] for i in mine], [float(h[i]) for i in mine]
+        if not polys:
+            continue
+        rings = [[[round(x, 1), round(y, 1)] for x, y in np.asarray(shapely.simplify(q, 1.0).exterior.coords)[:-1]] for q in polys]
+        top = int(np.argmax(hs))
+        c = shapely.centroid(polys[top])
+        out[r["slug"]] = {"fp": rings, "h": round(max(hs), 1), "x": round(c.x), "y": round(c.y)}
+    (CACHE / "project_fp.json").write_text(json.dumps(out, separators=(",", ":")), encoding="utf-8")
+    print("project footprints:", len(out), "of", len(sites), "sites;", sum(len(v["fp"]) for v in out.values()), "buildings")
 
 
 def load_buildings(dem, sat):
@@ -409,7 +500,10 @@ def load_buildings(dem, sat):
         cls = np.concatenate([cls, cls[par], np.full(len(blobs), "", object)])
         names = np.concatenate([names, np.full(n_new, None, object)])
         forced = np.concatenate([forced, np.full(len(towers), "satellite"), np.full(len(blobs), "raster")])
-        pg, ph, pn, pc = project_buildings(g)
+        pg, ph, pn, pc, sheds = project_buildings(g, est)
+        if sheds:                                            # sheds on a building site, now under a generated tower
+            keep = np.ones(len(g), bool); keep[list(sheds)] = False
+            g, est, hv, fl, cls, names, forced = (a[keep] for a in (g, est, hv, fl, cls, names, forced))
         if pg:
             g = np.concatenate([g, np.array(pg, object)])
             est = np.concatenate([est, ph])
@@ -630,9 +724,13 @@ def stage_search():
     sites = project_sites()                                  # every located project is a society label and a search entry
     for r in sites:
         rows.append((0, 1e12, r["name"], r["x"], r["y"], None))
+    fpf = CACHE / "project_fp.json"                          # written by the pack stage
+    fps = json.loads(fpf.read_text(encoding="utf-8")) if fpf.exists() else {}
+    # The marker stands on the project's tallest building; the overlay makes all of its buildings clickable.
     (OUT / "projects.json").write_text(json.dumps(
-        [{"slug": r["slug"], "x": round(r["x"]), "y": round(r["y"]), "need": r["need"], "source": r["source"].split(":")[0]} for r in sites],
-        separators=(",", ":")), encoding="utf-8")
+        [{"slug": r["slug"], "x": fps.get(r["slug"], {}).get("x", round(r["x"])), "y": fps.get(r["slug"], {}).get("y", round(r["y"])),
+          "need": r["need"], "source": r["source"].split(":")[0], **({"h": fps[r["slug"]]["h"], "fp": fps[r["slug"]]["fp"]} if r["slug"] in fps else {})}
+         for r in sites], separators=(",", ":")), encoding="utf-8")
     rows.sort(key=lambda r: (r[0], -r[1]))
     seen, chunks, n_soc = set(), {}, 0
     for tier, _, n, x, y, z in rows:
@@ -645,6 +743,7 @@ def stage_search():
         if tier == 0:
             out.append({"n": n, "x": round(x), "y": round(y), "k": "soc"})
             n_soc += 1
+    out.extend(EXTRA_SEARCH)
     for f in OUT.glob("l_*.json"):
         f.unlink()
     for (cx, cy), recs in chunks.items():
@@ -657,6 +756,7 @@ def stage_pack():
     dem, _ = dem_grid()
     sat = np.load(CACHE / "sat10.npy") if (CACHE / "sat10.npy").exists() else None
     g, info = load_buildings(dem, sat)
+    project_footprints(g, info)
     print("buildings", len(g), {s: int((info["src"] == s).sum()) for s in np.unique(info["src"])})
     roads = load_roads()
     tx = ((info["cx"] - X0) // TILE).astype(int)
@@ -701,7 +801,7 @@ def stage_pack():
     src = info["src"]
     (CACHE / "named_buildings.json").write_text(json.dumps(
         [[n, round(float(info["cx"][i])), round(float(info["cy"][i])), round(float(info["base"][i] + info["h"][i]), 1), round(float(info["h"][i]), 1)]
-         for i, n in enumerate(info["names"]) if n], ensure_ascii=False), encoding="utf-8")
+         for i, n in enumerate(info["names"]) if n and src[i] != "planned"], ensure_ascii=False), encoding="utf-8")   # generated towers are not map data
     manifest = {
         "version": 1, "name": "Noida", "extent": [X0, Y0, X1, Y1], "origin": {"lat": LAT0, "lon": LON0},
         "chunk": CHUNK, "tile": TILE, "ncx": NCX, "ncy": NCY, "chunkExt": "bin",

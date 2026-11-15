@@ -1,0 +1,32 @@
+# Project site coordinates and facts read from property portal pages (Magicbricks project and location pages), 2026-11-14.
+# projects.py `locate` applies a row only when the point passes its checks: inside the project's town, within reach of
+# the listed sector, and not a placeholder (the same point given for several different projects).
+# Blank towers, floors or acres mean the page did not state them.
+name,lat,lon,towers,floors,acres,url
+ACE Arte,28.431433,77.483583,,,,https://www.magicbricks.com/ace-arte-location-sector-150-noida-pdpid-4d4235343535303737
+Ace Edit,28.432194,77.508042,,,,https://www.magicbricks.com/ace-edit-location-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343337363839
+Ace Hanei,28.5596104,77.4851985,,,7,https://www.magicbricks.com/ace-hanei-sector-12-greater-noida-pdpid-4d4235343234323435
+ACE Verde,28.3344605,77.5458355,,,,https://www.magicbricks.com/ace-verde-location-yamuna-expressway-greater-noida-pdpid-4d4235343332303533
+Ace YXP,28.432194,77.508042,,,,https://www.magicbricks.com/ace-yxp-location-yamuna-expressway-greater-noida-pdpid-4d4235343138373439
+Arihant Seasons,28.1209446,77.5479166,,,,https://www.magicbricks.com/arihant-seasons-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343435373035
+ATS Province D Olympia,28.432194,77.508042,,,,https://www.magicbricks.com/ats-province-d-olympia-location-yamuna-expressway-greater-noida-pdpid-4d4235343239363433
+ATS Rhapsody,28.575475,77.430464,,,,https://www.magicbricks.com/ats-rhapsody-location-noida-extension-noida-pdpid-4d4235303936373339
+CASA GRANDE 2,28.4287984,77.5052653,,,,https://www.magicbricks.com/casa-grande-2-chi-5-greater-noida-pdpid-4d4235303232353732
+Clove County,28.4475546,77.4637155,3,30,5,https://www.magicbricks.com/clove-county-location-sector-151-noida-pdpid-4d4235343430323837
+Eldeco 7 Peaks,28.47924,77.500771,,,,https://www.magicbricks.com/eldeco-7-peaks-residences-location-omicron-1a-greater-noida-pdpid-4d4235343433363931
+Eldeco Echoes of Eden,28.313852870739577,77.53448444724233,3,,5,https://www.magicbricks.com/eldeco-echoes-of-eden-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343435383235
+Eldeco La Vida bella,28.563318676210958,77.48407760163083,5,,4,https://www.magicbricks.com/eldeco-la-vida-bella-noida-extension-greater-noida-pdpid-4d4235343230363135
+Elite X,28.5714721,77.4838891,6,28,5.44,https://www.magicbricks.com/elite-x-noida-extension-greater-noida-pdpid-4d4235343230373337
+Gaur Alaris,28.432194,77.508042,,,10,https://www.magicbricks.com/gaur-alaris-location-yamuna-expressway-greater-noida-pdpid-4d4235343535313639
+Gaur Chrysalis,28.2799599,77.5498259,,,,https://www.magicbricks.com/gaur-chrysalis-location-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343338333131
+Godrej Crown Residences,28.3903979782804,77.5243049269765,3,25,4.49,https://www.magicbricks.com/crown-residences-at-godrej-golf-links-location-sector-27-greater-noida-pdpid-4d4235343438313539
+Hero Homes Leafsong Retreat,28.47675,77.56095556,3,30,4,https://www.magicbricks.com/hero-leafsong-retreat-sector-mu-greater-noida-pdpid-4d4235343538363535
+L&T Green Reserve,28.5259509261874,77.3615789006735,4,28,6,https://www.magicbricks.com/l-and-t-green-reserve-sector-128-noida-pdpid-4d4235343336383235
+London Mart,28.5746109,77.3119266,,,,https://www.magicbricks.com/london-mart-location-noida-extension-noida-pdpid-4d4235313137393633
+Mahagun Manorialle,28.5252112,77.3611137,,,,https://www.magicbricks.com/mahagun-manorialle-location-sector-128-noida-pdpid-4d4235303736303430
+Max Estate 128,28.5282279,77.3612213,,,10,https://www.magicbricks.com/max-estate-128-location-sector-128-noida-pdpid-4d4235343131373635
+Nilay Square,28.4783704271723,77.5182230727331,,,1,https://www.magicbricks.com/nilay-square-alpha-2-greater-noida-pdpid-4d4235343332393731
+RG Luxury Homes,28.615325,77.439793,,,7.5,https://www.magicbricks.com/rg-luxury-homes-location-noida-extension-greater-noida-pdpid-4d4235303730383832
+SVG Town Square,28.4783704271723,77.5182230727331,,,1,https://www.magicbricks.com/svg-town-square-1-location-alpha-2-greater-noida-pdpid-4d4235343332393635
+Vihaan Villas,28.5660644,77.4459503,,,1,https://www.magicbricks.com/vihaan-villas-noida-extension-greater-noida-pdpid-4d4235333235393139
+Amaatra Suites,28.6608288,77.3792411,,,,https://nominatim.openstreetmap.org/search?q=Sector%205%2C%20Vasundhara%2C%20Ghaziabad (locality from https://www.instagram.com/reel/DGzudZdPlfP/)

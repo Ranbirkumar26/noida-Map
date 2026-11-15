@@ -1,109 +1,109 @@
 slug,name,city,sector,status,type,lat,lon,source,matched,confidence,need,towers,floors,acres,facts_url
-ace-arte,ACE Arte,Noida,Sector 150,New Launch,residential,28.429050,77.483642,sector,beside 8 located in same sector,0.30,built,,,,
-ace-edit,Ace Edit,Yamuna Expressway,Sector 22D,Under Construction,commercial,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-ace-hanei,Ace Hanei,Greater Noida West,Sector 12,Under Construction,residential,28.565220,77.448320,sector,beside 3 located in same sector,0.30,built,,,,
-ace-mahagun-medalleo,ACE MAHAGUN MEDALLEO,Noida,Sector 107,Under Construction,residential,28.546130,77.378690,map:place,Ace Medalleo,0.70,built,,,,
+ace-arte,ACE Arte,Noida,Sector 150,New Launch,residential,28.431433,77.483583,web,https://www.magicbricks.com/ace-arte-location-sector-150-noida-pdpid-4d4235343535303737,0.80,planned,11,23,14.82,https://www.99acres.com/ace-arte-sector-150-noida-npxid-r470618
+ace-edit,Ace Edit,Yamuna Expressway,Sector 22D,Under Construction,commercial,28.287614,77.549826,sector,beside 3 located in same sector,0.30,planned,1,13,3.4,https://www.99acres.com/ace-edit-sector-22d-yamuna-expressway-greater-noida-npxid-c454556
+ace-hanei,Ace Hanei,Greater Noida West,Sector 12,Under Construction,residential,28.559610,77.485198,web,https://www.magicbricks.com/ace-hanei-sector-12-greater-noida-pdpid-4d4235343234323435,0.80,planned,6,25,6.4,https://www.whitehat.realty/projects/ace-hanei
+ace-mahagun-medalleo,ACE MAHAGUN MEDALLEO,Noida,Sector 107,Under Construction,residential,28.546130,77.378690,map:place,Ace Medalleo,0.70,planned,8,29,9.88,https://kapurinfratech.com/ace-mahagun-medalleo/
 ace-platinum,ACE Platinum,Greater Noida,Zeta 1,Active,residential,28.499724,77.519736,map:land_use,Ace Platinum,1.00,built,,,,
-ace-starlit,ACE Starlit,Noida,Sector 152,Ready to Move,residential,28.446130,77.472542,map:land_use,ACE Starlit,1.00,built,,,,
+ace-starlit,ACE Starlit,Noida,Sector 152,Ready to Move,residential,28.445584,77.472448,map:land_use,ACE Starlit (moved onto its towers),1.00,built,,,,
 ace-terra,ACE Terra,Yamuna Expressway,Sector 126,Ready to Move,residential,28.312360,77.554020,map:place,ACE TERRA,1.00,planned,12,25,10.98,https://www.99acres.com/ace-terra-sector-22d-yamuna-expressway-greater-noida-npxid-r425033
-ace-verde,ACE Verde,Yamuna Expressway,Sector 22A,Under Construction,residential,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-ace-yxp,Ace YXP,Greater Noida,Sector 22D,Under Construction,commercial,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-aigin-royal-park,AIGIN Royal Park,Greater Noida West,Sector 1,Under Construction,residential,28.594410,77.450550,map:place,Aigin Royal,0.70,built,,,,
-amaatra-suites,Amaatra Suites,Ghaziabad,Sector 5,Ready to Move,commercial,,,,,,,,,,
+ace-verde,ACE Verde,Yamuna Expressway,Sector 22A,Under Construction,residential,28.334460,77.545835,web,https://www.magicbricks.com/ace-verde-location-yamuna-expressway-greater-noida-pdpid-4d4235343332303533,0.80,planned,7,25,7.97,https://www.99acres.com/ace-verde-sector-22a-yamuna-expressway-greater-noida-npxid-r441720
+ace-yxp,Ace YXP,Greater Noida,Sector 22D,Under Construction,commercial,28.287614,77.549826,sector,beside 3 located in same sector,0.30,planned,1,11,4,https://ace-yxps.in/
+aigin-royal-park,AIGIN Royal Park,Greater Noida West,Sector 1,Under Construction,residential,28.594410,77.450550,map:place,Aigin Royal,0.70,planned,2,,2.1,https://www.investmango.com/aigin-royal-park-nh-24-highway-ghaziabad
+amaatra-suites,Amaatra Suites,Ghaziabad,Sector 5,Ready to Move,commercial,28.660829,77.379241,web,https://nominatim.openstreetmap.org/search?q=Sector%205%2C%20Vasundhara%2C%20Ghaziabad (locality from https://www.instagram.com/reel/DGzudZdPlfP/),0.80,lowrise,,,,
 arihant-abode,Arihant Abode,Greater Noida West,Sector 10,Ready to Move,residential,28.572280,77.480915,map:land_use,Arihant Abode,1.00,built,,,,
-arihant-one,Arihant ONE,Greater Noida West,Sector 1,Active,residential,28.610960,77.452010,map:place,Arihant One,1.00,built,,,,
-arihant-seasons,Arihant Seasons,Yamuna Expressway,Sector 22D,New Launch,residential,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-artha-mart,Artha Mart,Greater Noida West,Sector 16 C,Active,commercial,28.587548,77.441089,map:place,Artha Mart,1.00,built,,,,
+arihant-one,Arihant ONE,Greater Noida West,Sector 1,Active,residential,28.610782,77.451656,map:place,Arihant One (moved onto its towers),1.00,built,,,,
+arihant-seasons,Arihant Seasons,Yamuna Expressway,Sector 22D,New Launch,residential,28.287614,77.549826,sector,beside 3 located in same sector,0.30,planned,9,30,10.19,https://www.99acres.com/arihant-seasons-sector-22d-yamuna-expressway-greater-noida-npxid-r462535
+artha-mart,Artha Mart,Greater Noida West,Sector 16 C,Active,commercial,28.587548,77.441089,map:place,Artha Mart,1.00,lowrise,,,,
 ats-allure,ATS Allure,Yamuna Expressway,Sector 22D,Ready to Move,residential,28.287614,77.559540,map:place,ATS Allure,1.00,built,,,,
-ats-destinaire,ATS Destinaire,Greater Noida West,Sector 1,Under Construction,residential,28.558455,77.438839,map:place,ATS Destinaire,1.00,built,,,,
+ats-destinaire,ATS Destinaire,Greater Noida West,Sector 1,Under Construction,residential,28.558455,77.438839,map:place,ATS Destinaire,1.00,planned,14,27,8.24,https://www.99acres.com/ats-destinaire-sector-1-greater-noida-west-greater-noida-npxid-r336331
 ats-dolce,ATS Dolce,Greater Noida,Zeta 1,Under Construction,residential,28.496516,77.522253,map:land_use,ATS Dolce,1.00,built,,,,
-ats-floral-pathways,ATS Floral Pathways,Ghaziabad,NH-24,Ready to Move,residential,28.656393,77.470937,map:place,ATS Floral Pathways,1.00,built,,,,
+ats-floral-pathways,ATS Floral Pathways,Ghaziabad,NH-24,Ready to Move,residential,28.656289,77.471305,map:place,ATS Floral Pathways (moved onto its towers),1.00,built,,,,
 ats-homekraft-happy-trails,ATS Homekraft Happy Trails,Greater Noida West,Sector 10,Ready to Move,residential,28.576263,77.468265,map:place,ATS Happy Trails,0.70,planned,12,27,8.59,https://www.ats.ind.in/projects-in-greater-noida/ats-homekraft-happy-trails-sector-10/
-ats-kingston-heath,ATS Kingston Heath,Yamuna Expressway,Sector 150,Under Construction,residential,28.424657,77.483188,map:land_use,ATS Kingston Heath,1.00,built,,,,
+ats-kingston-heath,ATS Kingston Heath,Yamuna Expressway,Sector 150,Under Construction,residential,28.423672,77.483912,map:land_use,ATS Kingston Heath (moved onto its towers),1.00,built,,,,
 ats-knightsbridge,ATS KnightsBridge,Noida,Sector 124,Under Construction,residential,28.549354,77.328588,map:building,ATS Knightsbridge,1.00,built,,,,
 ats-picturesque-reprieves,ATS Picturesque Reprieves,Noida,Sector 152,Under Construction,residential,28.442928,77.476145,map:land_use,ATS Picturesque Reprieves,1.00,built,,,,
-ats-pristine,ATS Pristine,Noida,Sector 150,Under Construction,residential,28.440055,77.484864,map:land_use,ATS Pristine,1.00,built,,,,
-ats-pristine-golf-villas,ATS Pristine Golf Villas,Noida,Sector 150,Under Construction,residential,28.429050,77.479970,map:place,Ats Pristine Golf Villas,1.00,built,,,,
-ats-province-d-olympia,ATS Province D Olympia,Yamuna Expressway,Sector 22D,Under Construction,residential,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-ats-rhapsody,ATS Rhapsody,Greater Noida West,Sector 1,Under Construction,residential,28.558455,77.442650,sector,beside 5 located in same sector,0.30,built,,,,
-bhutani-city-center-32,Bhutani City Center 32,Noida,Sector 32,Ready to Move,commercial,28.574242,77.353405,map:land_use,Bhutani City Center 32,1.00,built,,,,
-bhutani-cyberthum,Bhutani Cyberthum,Noida,Sector 62,Ready to Move,commercial,28.632150,77.374300,map:place,Office Space Cyberthum Bhutani,0.90,built,,,,
-casa-grande-2,CASA GRANDE 2,Greater Noida,SECTOR CHI-V,Under Construction,residential,28.430020,77.507613,sector,beside 1 located in same sector,0.30,built,,,,
-central-market,Central Market,Noida,Sector 120,Active,commercial,28.586325,77.398839,map:place,Central Market Noida,0.90,built,,,,
+ats-pristine,ATS Pristine,Noida,Sector 150,Under Construction,residential,28.439588,77.485227,map:land_use,ATS Pristine (moved onto its towers),1.00,built,,,,
+ats-pristine-golf-villas,ATS Pristine Golf Villas,Noida,Sector 150,Under Construction,residential,28.429050,77.479970,map:place,Ats Pristine Golf Villas,1.00,lowrise,,,,
+ats-province-d-olympia,ATS Province D Olympia,Yamuna Expressway,Sector 22D,Under Construction,residential,28.287614,77.549826,sector,beside 3 located in same sector,0.30,planned,30,3,,https://www.youtube.com/watch?v=x-D5cLLCbBo
+ats-rhapsody,ATS Rhapsody,Greater Noida West,Sector 1,Under Construction,residential,28.575475,77.430464,web,https://www.magicbricks.com/ats-rhapsody-location-noida-extension-noida-pdpid-4d4235303936373339,0.80,built,,,,
+bhutani-city-center-32,Bhutani City Center 32,Noida,Sector 32,Ready to Move,commercial,28.574242,77.353405,map:land_use,Bhutani City Center 32,1.00,lowrise,,,,
+bhutani-cyberthum,Bhutani Cyberthum,Noida,Sector 62,Ready to Move,commercial,28.633185,77.374181,map:place,Office Space Cyberthum Bhutani (moved onto its towers),0.90,lowrise,,,,
+casa-grande-2,CASA GRANDE 2,Greater Noida,SECTOR CHI-V,Under Construction,residential,28.428798,77.505265,web,https://www.magicbricks.com/casa-grande-2-chi-5-greater-noida-pdpid-4d4235303232353732,0.80,built,,,,
+central-market,Central Market,Noida,Sector 120,Active,commercial,28.585913,77.398944,map:place,Central Market Noida (moved onto its towers),0.90,lowrise,,,,
 civitech-strings,Civitech Strings,Greater Noida West,sector 12,Under Construction,residential,28.565220,77.448320,map:place,Civitech Strings,1.00,built,,,,
-clove-county,Clove County,Noida,Sector 151,New Launch,residential,28.441094,77.463684,sector,beside 1 located in same sector,0.30,planned,3,30,5,https://www.99acres.com/clove-county-sector-151-noida-npxid-r441220
+clove-county,Clove County,Noida,Sector 151,New Launch,residential,28.447555,77.463716,web,https://www.magicbricks.com/clove-county-location-sector-151-noida-pdpid-4d4235343430323837,0.80,planned,3,30,5,https://www.99acres.com/clove-county-sector-151-noida-npxid-r441220
 county-107,County 107,Noida,Sector 107,Ready to Move,residential,28.545236,77.374848,map:place,County 107,1.00,built,,,,
 crc-joyous,CRC Joyous,Greater Noida West,,Under Construction,residential,28.592703,77.454912,map:place,CRC Joyous,1.00,built,,,,
 crc-the-flagship,CRC The Flagship,Noida,Sector 140A,Active,commercial,28.510570,77.423430,map:place,CRC The Flagship,1.00,lowrise,,,,
 dasnac-arc,Dasnac ARC,Noida,Sector 72,Under Construction,commercial,28.585730,77.377600,sector,beside 1 located in same sector,0.30,lowrise,,,,
-dasnac-westminster,Dasnac Westminster,Noida,Sec 146,Under Construction,residential,28.469671,77.454486,sector,sector centre,0.30,built,,,,
-eldeco-7-peaks,Eldeco 7 Peaks,Greater Noida,Omicron 1A,Under Construction,residential,28.462391,77.562501,sector,sector centre,0.30,built,,,,
-eldeco-echoes-of-eden,Eldeco Echoes of Eden,Yamuna Expressway,Sector 22D,Under Construction,residential,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-eldeco-la-vida-bella,Eldeco La Vida bella,Greater Noida West,Sector 12,Under Construction,residential,28.565220,77.448320,sector,beside 3 located in same sector,0.30,built,,,,
-elite-x,Elite X,Greater Noida West,Sector 10,Active,residential,28.576263,77.468265,sector,beside 3 located in same sector,0.30,planned,6,27,5.44,https://elitex.co/
-eros-sampoornam,ERos Sampoornam,Greater Noida West,Sector 2,Active,residential,28.589205,77.457289,map:land_use,Eros Sampoornam,1.00,built,,,,
-experion-elements,Experion Elements,Noida,Sector 45,Under Construction,residential,28.550941,77.345756,map:place,Experion Elements,1.00,built,,,,
+dasnac-westminster,Dasnac Westminster,Noida,Sec 146,Under Construction,residential,28.469671,77.454486,sector,sector centre,0.30,planned,1,34,1.92,https://projexis.co.in/property/dasnac-westminster/
+eldeco-7-peaks,Eldeco 7 Peaks,Greater Noida,Omicron 1A,Under Construction,residential,28.479240,77.500771,web,https://www.magicbricks.com/eldeco-7-peaks-residences-location-omicron-1a-greater-noida-pdpid-4d4235343433363931,0.80,planned,7,30,7.5,https://urbaninvestors.in/eldeco-7-peaks
+eldeco-echoes-of-eden,Eldeco Echoes of Eden,Yamuna Expressway,Sector 22D,Under Construction,residential,28.313853,77.534484,web,https://www.magicbricks.com/eldeco-echoes-of-eden-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343435383235,0.80,planned,3,,5,https://www.magicbricks.com/eldeco-echoes-of-eden-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343435383235
+eldeco-la-vida-bella,Eldeco La Vida bella,Greater Noida West,Sector 12,Under Construction,residential,28.563319,77.484078,web,https://www.magicbricks.com/eldeco-la-vida-bella-noida-extension-greater-noida-pdpid-4d4235343230363135,0.80,planned,5,,4,https://www.magicbricks.com/eldeco-la-vida-bella-noida-extension-greater-noida-pdpid-4d4235343230363135
+elite-x,Elite X,Greater Noida West,Sector 10,Active,residential,28.571472,77.483889,web,https://www.magicbricks.com/elite-x-noida-extension-greater-noida-pdpid-4d4235343230373337,0.80,planned,6,27,5.44,https://elitex.co/
+eros-sampoornam,ERos Sampoornam,Greater Noida West,Sector 2,Active,residential,28.588873,77.457254,map:land_use,Eros Sampoornam (moved onto its towers),1.00,built,,,,
+experion-elements,Experion Elements,Noida,Sector 45,Under Construction,residential,28.550941,77.345756,map:place,Experion Elements,1.00,planned,2,40,4.76,https://www.99acres.com/experion-elements-sector-45-noida-npxid-r414339
 experion-saatori,Experion Saatori,Noida,Sector 151,New Launch,residential,28.441094,77.463684,map:place,Experion Noida 151,1.00,planned,3,36,5,https://urbaninvestors.in/experion-saatori
-fairfox-eon,Fairfox EON,Noida,Sector 140A,Under Construction,commercial,28.513332,77.418185,map:place,Fairfox EON Commercial Park,0.90,built,,,,
+fairfox-eon,Fairfox EON,Noida,Sector 140A,Under Construction,commercial,28.513332,77.418185,map:place,Fairfox EON Commercial Park,0.90,lowrise,,,,
 fusion-brook-and-rivulet,Fusion Brook and Rivulet,Greater Noida West,Sector 12,Under Construction,residential,28.561060,77.482132,map:place,The Brook and Rivulet,0.70,built,,,,
-galaxy-blue-sapphire-plaza,Galaxy Blue Sapphire Plaza,Greater Noida West,Sector 4,Ready to Move,commercial,28.607229,77.435639,map:place,Galaxy Blue Sapphire Plaza,1.00,built,,,,
-gaur-alaris,Gaur Alaris,Yamuna Expressway,Sector 22D,Under Construction,residential,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-gaur-bento,Gaur Bento,Yamuna Expressway,Gaur Yamuna City,New Launch,commercial,28.348680,77.533310,map:place,Gaur Bento - Commercial Studio Apartments,0.90,built,,,,
-gaur-chrysalis,Gaur Chrysalis,Yamuna Expressway,Sector 22D,New Launch,residential,28.287614,77.559540,sector,beside 1 located in same sector,0.30,built,,,,
-gaur-city-center,Gaur City Center,Greater Noida West,Gaur Chowk,Ready to Move,commercial,28.605560,77.427266,map:place,Gaur City Center,1.00,built,,,,
+galaxy-blue-sapphire-plaza,Galaxy Blue Sapphire Plaza,Greater Noida West,Sector 4,Ready to Move,commercial,28.607229,77.435639,map:place,Galaxy Blue Sapphire Plaza,1.00,lowrise,,,,
+gaur-alaris,Gaur Alaris,Yamuna Expressway,Sector 22D,Under Construction,residential,28.287614,77.549826,sector,beside 3 located in same sector,0.30,planned,8,34,11.8,https://www.99acres.com/gaur-alaris-sector-22d-yamuna-expressway-greater-noida-npxid-r468995
+gaur-bento,Gaur Bento,Yamuna Expressway,Gaur Yamuna City,New Launch,commercial,28.348680,77.533310,map:place,Gaur Bento - Commercial Studio Apartments,0.90,planned,2,40,,https://gaursonsprojects.in/
+gaur-chrysalis,Gaur Chrysalis,Yamuna Expressway,Sector 22D,New Launch,residential,28.279960,77.549826,web,https://www.magicbricks.com/gaur-chrysalis-location-sector-22d-yamuna-expressway-greater-noida-pdpid-4d4235343338333131,0.80,outside,,,,
+gaur-city-center,Gaur City Center,Greater Noida West,Gaur Chowk,Ready to Move,commercial,28.605560,77.427266,map:place,Gaur City Center,1.00,lowrise,,,,
 gaur-mulberry-mansions,Gaur Mulberry Mansions,Greater Noida West,Sector 1,Under Construction,residential,28.556320,77.439010,map:place,Gaur Mulberry Mansions,1.00,planned,20,2,,https://www.bricksnwall.com/Gaur-Mulberry-Mansions
 gaur-nyc-residences,Gaur NYC Residences,Ghaziabad,Wave City,Under Construction,residential,28.669680,77.486090,map:place,Gaur NYC Wave city NH 24 Ghaziabad,0.75,built,,,,
 godrej-crown-residences,Godrej Crown Residences,Greater Noida,sector 27,New Launch,residential,28.471077,77.533242,sector,beside 1 located in same sector,0.30,planned,3,25,4.49,https://www.99acres.com/godrej-golf-links-crown-residences-sector-27-greater-noida-npxid-r465276
 godrej-golf-links,Godrej Golf Links,Greater Noida,Sector 27,Under Construction,residential,28.471077,77.533242,map:land_use,Godrej Golflinks,1.00,planned,24,3,6.74,https://www.godrejswoods.info/godrej-golf-links.html
 godrej-majesty,Godrej Majesty,Greater Noida West,Sector 12,Under Construction,residential,28.577540,77.438650,map:place,Godrej Majesty,1.00,built,,,,
 godrej-nest,Godrej Nest,Noida,sector 150,Active,residential,28.429220,77.479780,map:place,Godrej Nest,1.00,built,,,,
-godrej-woods,Godrej Woods,Noida,Sector 43,Ready to Move,residential,28.558745,77.351130,map:place,Godrej Woods,1.00,built,,,,
-golden-i,Golden-I,Greater Noida West,Techzone 4,Active,commercial,28.591479,77.435329,map:place,Golden I,1.00,built,,,,
+godrej-woods,Godrej Woods,Noida,Sector 43,Ready to Move,residential,28.558644,77.350715,map:place,Godrej Woods (moved onto its towers),1.00,built,,,,
+golden-i,Golden-I,Greater Noida West,Techzone 4,Active,commercial,28.591294,77.434887,map:place,Golden I (moved onto its towers),1.00,lowrise,,,,
 gulshan-avante,Gulshan Avante,Greater Noida West,Sector 16B,Under Construction,residential,28.565220,77.448320,map:place,Gulshan Avante,1.00,built,,,,
-gulshan-dynasty,Gulshan Dynasty,Noida,Secrtor 144,Ready to Move,residential,28.497734,77.439667,map:place,Gulshan Dynasty,1.00,built,,,,
+gulshan-dynasty,Gulshan Dynasty,Noida,Secrtor 144,Ready to Move,residential,28.497275,77.439172,map:place,Gulshan Dynasty (moved onto its towers),1.00,built,,,,
 gulshan-ikebana,Gulshan Ikebana,Noida,Sector 143,Ready to Move,residential,28.501482,77.428307,map:place,Gulshan Ikebana,1.00,built,,,,
-gygy-mentis,GYGY Mentis,Noida,Sector 140,Under Construction,commercial,28.570193,77.323978,map:place,GYGY Mentis,1.00,built,,,,
-hero-homes-leafsong-retreat,Hero Homes Leafsong Retreat,Greater Noida,Sector MU,New Launch,residential,28.479013,77.560296,sector,sector centre,0.30,built,,,,
+gygy-mentis,GYGY Mentis,Noida,Sector 140,Under Construction,commercial,28.570193,77.323978,map:place,GYGY Mentis,1.00,lowrise,,,,
+hero-homes-leafsong-retreat,Hero Homes Leafsong Retreat,Greater Noida,Sector MU,New Launch,residential,28.476750,77.560956,web,https://www.magicbricks.com/hero-leafsong-retreat-sector-mu-greater-noida-pdpid-4d4235343538363535,0.80,planned,3,30,4,https://www.magicbricks.com/hero-leafsong-retreat-sector-mu-greater-noida-pdpid-4d4235343538363535
 irish-platinum,Irish Platinum,Greater Noida West,Sector 10,Under Construction,residential,28.598596,77.462926,map:place,Irish Platinum,1.00,planned,4,30,4.65,https://www.99acres.com/irish-platinum-sector-10-greater-noida-west-greater-noida-npxid-r403945
 ivy-county,IVY County,Noida,Sector 75,Ready to Move,residential,28.545236,77.374848,map:place,IVY County,1.00,built,,,,
 jade-county,Jade County,Ghaziabad,Wave City,Under Construction,residential,28.669680,77.486090,sector,beside 1 located in same sector,0.30,built,,,,
 kalpataru-vista,Kalpataru Vista,Noida,Sector 128,Ready to Move,residential,28.519625,77.360773,map:land_use,Kalpataru Vista,1.00,built,,,,
-l-t-green-reserve,L&T Green Reserve,Noida,Sector 128,New Launch,residential,28.519625,77.360773,sector,beside 1 located in same sector,0.30,built,,,,
-london-mart,London Mart,Greater Noida,Sector 16B,Under Construction,commercial,28.608563,77.450255,sector,sector centre,0.30,built,,,,
+l-t-green-reserve,L&T Green Reserve,Noida,Sector 128,New Launch,residential,28.525951,77.361579,web,https://www.magicbricks.com/l-and-t-green-reserve-sector-128-noida-pdpid-4d4235343336383235,0.80,built,4,28,6,https://www.magicbricks.com/l-and-t-green-reserve-sector-128-noida-pdpid-4d4235343336383235
+london-mart,London Mart,Greater Noida,Sector 16B,Under Construction,commercial,28.608563,77.450255,sector,sector centre,0.30,lowrise,,,,
 m3m-jacob-co,M3M Jacob & Co,Noida,sector 97,New Launch,residential,28.538668,77.351269,map:place,M3M Jacob & Co Residences Noida,0.90,planned,2,40,5.5,https://www.nobroker.in/m3m-jacob-and-co-sector-97_noida-prjt-8aa9addd9a909ff6019a90acaf6204b6
-m3m-the-cullinan,M3M The Cullinan,Noida,Sector 94,Under Construction,residential,28.550942,77.328499,map:place,M3M The Cullinan,1.00,built,,,,
+m3m-the-cullinan,M3M The Cullinan,Noida,Sector 94,Under Construction,residential,28.550942,77.328499,map:place,M3M The Cullinan,1.00,planned,4,33,12.8,https://www.99acres.com/m3m-the-cullinan-sector-94-noida-npxid-r410631
 m3m-the-line,M3M The Line,Noida,Sector 72,Under Construction,commercial,28.585730,77.377600,map:place,M3M The Line,1.00,lowrise,,,,
-mahagun-manorialle,Mahagun Manorialle,Noida,sector 128,Ready to Move,residential,28.519625,77.360773,sector,beside 1 located in same sector,0.30,built,,,,
-mahagun-montagge,Mahagun Montagge,Greater Noida West,Sector 1,Active,residential,28.558455,77.442650,sector,beside 5 located in same sector,0.30,built,,,,
+mahagun-manorialle,Mahagun Manorialle,Noida,sector 128,Ready to Move,residential,28.525211,77.361114,web,https://www.magicbricks.com/mahagun-manorialle-location-sector-128-noida-pdpid-4d4235303736303430,0.80,built,,,,
+mahagun-montagge,Mahagun Montagge,Greater Noida West,Sector 1,Active,residential,28.566064,77.442650,sector,beside 7 located in same sector,0.30,planned,,,,
 max-estate-105,Max Estate 105,Noida,Sector 105,New Launch,residential,28.530330,77.366260,map:place,Max Estates Sector 105 Noida,1.00,planned,2,37,10.33,https://www.99acres.com/max-estate-105-sector-105-noida-npxid-r447888
-max-estate-128,Max Estate 128,Noida,Sector 128,Under Construction,residential,28.519625,77.360773,sector,beside 1 located in same sector,0.30,built,,,,
+max-estate-128,Max Estate 128,Noida,Sector 128,Under Construction,residential,28.528228,77.361221,web,https://www.magicbricks.com/max-estate-128-location-sector-128-noida-pdpid-4d4235343131373635,0.80,planned,4,36,10,https://maxestates.in/wp-content/uploads/2024/12/Introduction-to-Estate-128.pdf
 migsun-alpha-capital,Migsun Alpha Capital,Greater Noida,Alpha 2,Ready to Move,commercial,28.478596,77.517823,sector,sector centre,0.30,lowrise,,,,
-nilay-square,Nilay Square,Greater Noida,Alpha 2,Under Construction,commercial,28.478596,77.517823,sector,sector centre,0.30,lowrise,,,,
-nx-one-studio,NX ONE Studio,Greater Noida West,Tech Zone IV,Ready to Move,commercial,28.585215,77.432949,sector,beside 2 located in same sector,0.30,built,,,,
-orion-one32,ORION One32,Noida,Sector 132,Under Construction,commercial,28.511710,77.377231,map:place,Orion One 32,1.00,built,,,,
+nilay-square,Nilay Square,Greater Noida,Alpha 2,Under Construction,commercial,28.478596,77.517823,sector,sector centre,0.30,lowrise,,,1,https://www.magicbricks.com/nilay-square-alpha-2-greater-noida-pdpid-4d4235343332393731
+nx-one-studio,NX ONE Studio,Greater Noida West,Tech Zone IV,Ready to Move,commercial,28.585215,77.432949,sector,beside 2 located in same sector,0.30,lowrise,,,,
+orion-one32,ORION One32,Noida,Sector 132,Under Construction,commercial,28.511710,77.377231,map:place,Orion One 32,1.00,lowrise,,,,
 palm-olympia,Palm Olympia,Greater Noida West,Sector 16C,Under Construction,residential,28.618299,77.421442,map:place,Palm Olympia,1.00,built,,,,
 paramount-golf-foreste-villas,Paramount Golf Foreste Villas,Greater Noida,Sector Zeta,Ready to Move,residential,28.522560,77.519680,map:place,The Villas at Paramount Golf Foreste,0.90,lowrise,,,,
-paras-one33,Paras One33,Noida,Sector 133,Under Construction,commercial,28.510509,77.369620,map:place,Paras One33,1.00,built,,,,
+paras-one33,Paras One33,Noida,Sector 133,Under Construction,commercial,28.510509,77.369620,map:place,Paras One33,1.00,lowrise,,,,
 parx-laureate,Parx Laureate,Noida,Sector 108,Ready to Move,residential,28.526676,77.373302,map:place,Parx Laureate,1.00,built,,,,
 pious-orchards,Pious Orchards,Noida,Sector 150,Active,residential,28.416758,77.489655,map:building,ATS Pious Orchards,0.90,built,,,,
-prateek-canary,Prateek Canary,Noida,Sector 150,Under Construction,residential,28.420082,77.490989,map:land_use,Prateek Canary,1.00,built,,,,
-prateek-edifice,Prateek Edifice,Noida,Sector 107,Ready to Move,residential,28.545871,77.375393,map:place,Prateek Edifice,1.00,built,,,,
-prateek-grand-begonia,Prateek Grand Begonia,Ghaziabad,Siddharth Vihar,Under Construction,residential,28.647825,77.407137,map:place,Prateek Grand Begonia,1.00,built,,,,
-prateek-grand-city,Prateek Grand City,Ghaziabad,Siddharth Vihar,Ready to Move,residential,28.640898,77.413808,map:place,Prateek Grand City,1.00,lowrise,,,,
+prateek-canary,Prateek Canary,Noida,Sector 150,Under Construction,residential,28.418977,77.491462,map:land_use,Prateek Canary (moved onto its towers),1.00,built,,,,
+prateek-edifice,Prateek Edifice,Noida,Sector 107,Ready to Move,residential,28.545483,77.375903,map:place,Prateek Edifice (moved onto its towers),1.00,built,,,,
+prateek-grand-begonia,Prateek Grand Begonia,Ghaziabad,Siddharth Vihar,Under Construction,residential,28.647825,77.407137,map:place,Prateek Grand Begonia,1.00,planned,12,32,15,https://www.whitehat.realty/projects/prateek-grand-begonia
+prateek-grand-city,Prateek Grand City,Ghaziabad,Siddharth Vihar,Ready to Move,residential,28.640898,77.413808,map:place,Prateek Grand City,1.00,planned,24,28,22.72,https://www.99acres.com/prateek-grand-city-siddharth-vihar-ghaziabad-npxid-r24988
 purvanchal-royal-city,Purvanchal Royal City,Greater Noida,Sector CHI-V,Ready to Move,residential,28.430020,77.507613,map:place,Purvanchal Royal City,1.00,built,,,,
-rg-luxury-homes,RG Luxury Homes,Greater Noida West,Sector 16B,Ready to Move,residential,28.565220,77.448320,sector,beside 1 located in same sector,0.30,built,,,,
-rg-pleiaddes,RG Pleiaddes,Greater Noida West,Sector 1,Under Construction,residential,28.558250,77.442650,map:place,RG Pleiaddes,1.00,built,,,,
+rg-luxury-homes,RG Luxury Homes,Greater Noida West,Sector 16B,Ready to Move,residential,28.615325,77.439793,web,https://www.magicbricks.com/rg-luxury-homes-location-noida-extension-greater-noida-pdpid-4d4235303730383832,0.80,built,,,7.5,https://www.magicbricks.com/rg-luxury-homes-location-noida-extension-greater-noida-pdpid-4d4235303730383832
+rg-pleiaddes,RG Pleiaddes,Greater Noida West,Sector 1,Under Construction,residential,28.558250,77.442650,map:place,RG Pleiaddes,1.00,planned,6,29,8,https://www.99acres.com/rgs-pleiaddes-sector-1-greater-noida-west-greater-noida-npxid-r435881
 rise-square,RISE Square,Greater Noida West,Techzone 4 / Sector 1,Ready to Move,commercial,28.578951,77.430569,map:land_use,Rise Square-Madison Square,0.90,lowrise,,,,
-samridhi-daksha-avenue,Samridhi Daksha Avenue,Noida,Sector 150,Ready to Move,commercial,28.432890,77.482420,map:place,Samridhi Daksh Avenue,1.00,built,,,,
-samridhi-luxuriya-avenue,Samridhi Luxuriya Avenue,Noida,Sector 150,Ready to Move,commercial,28.429050,77.479970,map:place,Samridhi Luxuriya Avenue,1.00,built,,,,
+samridhi-daksha-avenue,Samridhi Daksha Avenue,Noida,Sector 150,Ready to Move,commercial,28.432624,77.482120,map:place,Samridhi Daksh Avenue (moved onto its towers),1.00,lowrise,,,,
+samridhi-luxuriya-avenue,Samridhi Luxuriya Avenue,Noida,Sector 150,Ready to Move,commercial,28.429050,77.479970,map:place,Samridhi Luxuriya Avenue,1.00,lowrise,,,,
 saya-southx,Saya SouthX,Greater Noida West,Sector 16C (Ek Murti Chowk),Ready to Move,commercial,28.597640,77.458730,map:place,Saya South X,1.00,lowrise,,,,
-ska-orion,SKA Orion,Noida,Sector 143B,Ready to Move,commercial,28.498896,77.421879,map:land_use,Ska Orion,1.00,built,,,,
+ska-orion,SKA Orion,Noida,Sector 143B,Ready to Move,commercial,28.498896,77.421879,map:land_use,Ska Orion,1.00,lowrise,,,,
 smartworld-elie-saab,Smartworld Elie Saab,Noida,Sector 98,New Launch,residential,28.536128,77.360347,sector,sector centre,0.30,planned,3,,5.93,https://www.100acress.com/smartworld-eliesaab-residences/
-spectrum-metro,Spectrum Metro,Noida,Sector 75,Under Construction,commercial,28.572688,77.379155,map:place,Spectrum Metro,1.00,built,,,,
-svg-town-square,SVG Town Square,Greater Noida,Alpha 2,Under Construction,commercial,28.478596,77.517823,sector,sector centre,0.30,lowrise,,,,
-t-t-eutopia,T&T EUTOPIA,Ghaziabad,Siddharth Vihar,Ready to Move,residential,28.659920,77.403990,map:place,T&T Eutopia,1.00,lowrise,,,,
-tata-eureka-park,TATA Eureka Park,Noida,Sector 150,Active,residential,28.418887,77.485614,map:land_use,Tata Eureka Park,1.00,built,,,,
-the-islands-by-gaurs,The Islands By Gaurs,Greater Noida,Jaypee Greens,Under Construction,residential,28.475900,77.505871,map:place,Gaurs -  The Islands,0.90,planned,9,37,,https://www.99acres.com/the-islands-by-gaurs-jaypee-greens-greater-noida-npxid-r393708
-urbtech-npx,Urbtech NPX,Noida,Sector 153,Ready to Move,commercial,28.448563,77.472672,map:place,Urbtech NPX,1.00,built,,,,
-urbtech-trade-centre,Urbtech Trade Centre,Noida,Sector 62,Active,commercial,28.631580,77.352540,map:place,Urbtech Trade Centre,1.00,built,,,,
-vihaan-villas,Vihaan Villas,Greater Noida West,Sector 1,Ready to Move,residential,28.558455,77.442650,sector,beside 5 located in same sector,0.30,built,,,,
+spectrum-metro,Spectrum Metro,Noida,Sector 75,Under Construction,commercial,28.572688,77.379155,map:place,Spectrum Metro,1.00,lowrise,,,,
+svg-town-square,SVG Town Square,Greater Noida,Alpha 2,Under Construction,commercial,28.478596,77.517823,sector,sector centre,0.30,lowrise,,,1,https://www.magicbricks.com/svg-town-square-1-location-alpha-2-greater-noida-pdpid-4d4235343332393635
+t-t-eutopia,T&T EUTOPIA,Ghaziabad,Siddharth Vihar,Ready to Move,residential,28.659920,77.403990,map:place,T&T Eutopia,1.00,planned,11,26,8,https://www.99acres.com/t-and-t-eutopia-siddharth-vihar-ghaziabad-npxid-r370562
+tata-eureka-park,TATA Eureka Park,Noida,Sector 150,Active,residential,28.419340,77.485829,map:land_use,Tata Eureka Park (moved onto its towers),1.00,built,,,,
+the-islands-by-gaurs,The Islands By Gaurs,Greater Noida,Jaypee Greens,Under Construction,residential,28.470013,77.523315,manual,https://www.magicbricks.com/gaurs-the-islands-location-jaypee-greens-greater-noida-pdpid-4d4235333332373531,0.80,planned,9,37,,https://www.99acres.com/the-islands-by-gaurs-jaypee-greens-greater-noida-npxid-r393708
+urbtech-npx,Urbtech NPX,Noida,Sector 153,Ready to Move,commercial,28.448563,77.472672,map:place,Urbtech NPX,1.00,lowrise,,,,
+urbtech-trade-centre,Urbtech Trade Centre,Noida,Sector 62,Active,commercial,28.630792,77.351316,map:place,Urbtech Trade Centre (moved onto its towers),1.00,lowrise,,,,
+vihaan-villas,Vihaan Villas,Greater Noida West,Sector 1,Ready to Move,residential,28.566643,77.446087,web,https://www.magicbricks.com/vihaan-villas-noida-extension-greater-noida-pdpid-4d4235333235393139 (moved onto its towers),0.80,lowrise,,,1,https://www.magicbricks.com/vihaan-villas-noida-extension-greater-noida-pdpid-4d4235333235393139
